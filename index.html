@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Iran · Israel · USA — Conflict Map 2024–2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#0a0f1e}
+:root{
+  --bg:rgba(4,9,24,.6);
+  --panel:rgba(6,13,32,.86);
+  --border:rgba(255,255,255,.08);
+  --iran:#f87171;--israel:#60a5fa;--usa:#fbbf24;--ship:#22d3ee;
+  --text:#f1f5f9;--sub:#94a3b8;--green:#34d399;--purple:#a78bfa;
+}
+/* ── MAP FULLSCREEN BACKGROUND ── */
+#map{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:#0d1829}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:54px;z-index:1000;
+  background:rgba(4,10,26,.88);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  box-shadow:0 2px 24px rgba(0,0,0,.45);
+}
+.tb-left{display:flex;align-items:center;gap:14px}
+.tb-title{font-size:13px;font-weight:700;color:#f1f5f9;letter-spacing:.2px}
+.tb-sub{font-size:9px;color:var(--sub);margin-top:2px;letter-spacing:.1px}
+.live-pill{display:flex;align-items:center;gap:5px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:20px;padding:3px 10px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--iran);animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.live-txt{font-size:10px;font-weight:700;color:var(--iran);letter-spacing:.8px}
+.tb-legend{display:flex;gap:16px;align-items:center}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:rgba(255,255,255,.7)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tb-src{font-size:9px;color:rgba(255,255,255,.28);padding-left:14px;border-left:1px solid rgba(255,255,255,.1)}
+
+/* ── PANELS (glass overlays) ── */
+.lpanel{
+  position:fixed;left:0;top:54px;bottom:0;width:286px;z-index:500;
+  background:rgba(4,10,26,.86);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-right:1px solid rgba(255,255,255,.07);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:4px 0 32px rgba(0,0,0,.4);
+}
+.rpanel{
+  position:fixed;right:0;top:54px;bottom:0;width:284px;z-index:500;
+  background:rgba(4,10,26,.86);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-left:1px solid rgba(255,255,255,.07);
+  overflow-y:auto;
+  box-shadow:-4px 0 32px rgba(0,0,0,.4);
+}
+.rpanel::-webkit-scrollbar{width:3px}
+.rpanel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* ── MAP HINT ── */
+.map-hint{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:600;
+  background:rgba(4,10,26,.82);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.1);border-radius:20px;
+  padding:5px 16px;font-size:10px;color:rgba(255,255,255,.5);
+  pointer-events:none;white-space:nowrap;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+
+/* ── SECTIONS ── */
+.sec{border-bottom:1px solid rgba(255,255,255,.06);padding:11px 13px}
+.sec-ttl{font-size:8.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:9px}
+
+/* ── STAT CARDS ── */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.scard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;transition:background .15s;cursor:default}
+.scard:hover{background:rgba(255,255,255,.08)}
+.sval{font-size:18px;font-weight:800;line-height:1;color:#f1f5f9}
+.slbl{font-size:8.5px;color:var(--sub);margin-top:3px;font-weight:500}
+.scard.r .sval{color:var(--iran)}.scard.b .sval{color:var(--israel)}.scard.a .sval{color:var(--usa)}.scard.g .sval{color:var(--green)}
+
+/* ── PHASE BUTTONS ── */
+.pbtn{display:flex;align-items:center;gap:9px;padding:7px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;cursor:pointer;transition:all .15s;margin-bottom:5px}
+.pbtn:last-child{margin-bottom:0}
+.pbtn:hover,.pbtn.on{border-color:var(--ship);background:rgba(34,211,238,.08);box-shadow:0 0 0 1px rgba(34,211,238,.15)}
+.pbtn-date{font-size:8.5px;color:var(--sub);font-weight:600}
+.pbtn-name{font-size:11px;font-weight:600;color:#e2e8f0}
+.ptag{font-size:8px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.4px;flex-shrink:0}
+.ptag.ir{background:rgba(248,113,113,.15);color:#fca5a5}
+.ptag.il{background:rgba(96,165,250,.15);color:#93c5fd}
+.ptag.us{background:rgba(251,191,36,.12);color:#fcd34d}
+.ptag.all{background:rgba(167,139,250,.12);color:#c4b5fd}
+
+/* ── TIMELINE ── */
+.tl{overflow-y:auto;flex:1}
+.tl::-webkit-scrollbar{width:3px}
+.tl::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.tli{display:flex;gap:9px;align-items:flex-start;padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .1s}
+.tli:hover{background:rgba(255,255,255,.04)}
+.tli.on{background:rgba(34,211,238,.08);border-left:3px solid var(--ship);padding-left:10px}
+.tli-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tli-date{font-size:8.5px;color:var(--sub);font-weight:600;margin-bottom:1px}
+.tli-name{font-size:10.5px;font-weight:600;color:#e2e8f0;line-height:1.3;margin-bottom:2px}
+.tli-desc{font-size:9.5px;color:var(--sub);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tli-tag{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;margin-top:2px;align-self:flex-start}
+
+/* ── POPUPS ── */
+.leaflet-popup-content-wrapper{background:rgba(5,12,32,.96);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--text);box-shadow:0 8px 40px rgba(0,0,0,.6);min-width:210px;backdrop-filter:blur(16px)}
+.leaflet-popup-tip{background:rgba(5,12,32,.96)}
+.leaflet-popup-content{margin:12px 14px;font-family:'Inter',sans-serif}
+.leaflet-container a.leaflet-popup-close-button{color:var(--sub)}
+.pu-title{font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:5px}
+.pu-sub{font-size:10px;color:var(--sub);margin-bottom:7px}
+.pu-div{height:1px;background:rgba(255,255,255,.08);margin:7px 0}
+.pu-desc{font-size:10px;color:var(--sub);line-height:1.5}
+.ship-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;color:var(--ship);margin-bottom:7px;letter-spacing:.5px}
+
+/* ── FLOW ANIMATION ── */
+@keyframes flow{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+
+/* ── LIVE WARNING RINGS ── */
+@keyframes warnPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8),0 0 18px rgba(220,38,38,.6)}50%{box-shadow:0 0 0 12px rgba(220,38,38,0),0 0 35px rgba(220,38,38,1)}}
+@keyframes warnRing{0%{transform:translate(-50%,-50%) scale(.4);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.8);opacity:0}}
+@keyframes warnBlink{0%,100%{opacity:1}40%{opacity:.15}}
+@keyframes warnBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* ── ATTACK ALERT BANNER ── */
+@keyframes alertIn{from{transform:translateX(-50%) translateY(-90px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+@keyframes alertOut{from{transform:translateX(-50%) translateY(0);opacity:1}to{transform:translateX(-50%) translateY(-90px);opacity:0}}
+@keyframes alertFlash{0%,100%{background:rgba(220,38,38,.09)}50%{background:rgba(220,38,38,.22)}}
+@keyframes alertBorderGlow{0%,100%{box-shadow:0 0 18px rgba(220,38,38,.35),0 8px 32px rgba(0,0,0,.7)}50%{box-shadow:0 0 42px rgba(220,38,38,.75),0 8px 32px rgba(0,0,0,.7)}}
+/* #attack-alert base styles applied via JS cssText for full control */
+
+/* ── X TOAST ── */
+@keyframes toastIn{from{transform:translateX(-50%) translateY(-110px) scale(.93);opacity:0}to{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}
+@keyframes toastOut{from{transform:translateX(-50%) translateY(0) scale(1);opacity:1}to{transform:translateX(-50%) translateY(-110px) scale(.93);opacity:0}}
+@keyframes toastGlowBlue{0%,100%{box-shadow:0 0 22px rgba(59,130,246,.35),0 10px 40px rgba(0,0,0,.8)}50%{box-shadow:0 0 48px rgba(59,130,246,.7),0 10px 40px rgba(0,0,0,.8)}}
+@keyframes toastGlowRed{0%,100%{box-shadow:0 0 22px rgba(239,68,68,.35),0 10px 40px rgba(0,0,0,.8)}50%{box-shadow:0 0 48px rgba(239,68,68,.7),0 10px 40px rgba(0,0,0,.8)}}
+#x-toast{
+  display:none;position:fixed;top:62px;left:50%;z-index:3000;
+  transform:translateX(-50%);
+  background:rgba(4,10,26,.98);
+  border:2px solid rgba(59,130,246,.75);
+  border-radius:14px;padding:13px 16px;min-width:430px;max-width:580px;
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+}
+.toast-breaking{display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.5);border-radius:6px;font-size:9px;font-weight:800;color:#f87171;letter-spacing:1.2px;padding:2px 8px;animation:warnBlink .8s infinite}
+
+/* ── EVENT DETAIL ── */
+.detail-empty{font-size:10.5px;color:var(--sub);padding:4px 0;line-height:1.5}
+.ev-hdr{padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.07)}
+.ev-date{font-size:9.5px;font-weight:700;margin-bottom:2px}
+.ev-title{font-size:11.5px;font-weight:700;color:#f1f5f9;line-height:1.3}
+.ev-body{padding:9px 13px}
+.ev-row{display:flex;justify-content:space-between;margin-bottom:5px;align-items:flex-start}
+.ev-key{font-size:9.5px;color:var(--sub);font-weight:600}
+.ev-val{font-size:9.5px;color:var(--text);font-weight:600;text-align:right;max-width:130px;line-height:1.3}
+.ev-desc{font-size:9.5px;color:var(--sub);line-height:1.5;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.07)}
+
+/* ── WEAPON BARS ── */
+.wbar{margin-bottom:8px}
+.wbar-top{display:flex;justify-content:space-between;margin-bottom:3px}
+.wbar-lbl{font-size:9.5px;color:var(--sub)}
+.wbar-val{font-size:9.5px;font-weight:700;color:#e2e8f0}
+.wbar-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.wbar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+
+/* ── ANIMATE BUTTON ── */
+.btn-anim{margin:10px 13px;background:linear-gradient(135deg,rgba(34,211,238,.9),rgba(6,182,212,.9));color:#0a0f1e;border:none;border-radius:8px;padding:10px;font-size:11px;font-weight:800;cursor:pointer;width:calc(100% - 26px);font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.3px;box-shadow:0 0 20px rgba(34,211,238,.2)}
+.btn-anim:hover{box-shadow:0 0 28px rgba(34,211,238,.35);transform:translateY(-1px)}
+.btn-anim:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* ── SHIP LIST ── */
+.ship-item{display:flex;align-items:flex-start;gap:8px;padding:8px 13px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .1s}
+.ship-item:hover{background:rgba(255,255,255,.04)}
+.ship-name{font-size:10px;font-weight:700;color:#e2e8f0;line-height:1.2;margin-bottom:2px}
+.ship-role{font-size:8.5px;color:var(--sub);line-height:1.3}
+
+/* ── SOURCES ── */
+.src-link{display:block;font-size:9px;color:var(--ship);text-decoration:none;margin-bottom:3px;opacity:.7}
+.src-link:hover{opacity:1}
+
+/* ── X FEED ── */
+.xfeed-wrap{overflow-y:auto;max-height:310px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:rgba(255,255,255,.02)}
+.xfeed-wrap::-webkit-scrollbar{width:3px}
+.xfeed-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.xpost{padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.05);transition:background .1s;cursor:default}
+.xpost:last-child{border-bottom:none}
+.xpost:hover{background:rgba(255,255,255,.04)}
+.xpost-hdr{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.xpost-av{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.xpost-name{font-size:9.5px;font-weight:700;color:#f1f5f9;line-height:1.2}
+.xpost-handle{font-size:8.5px;color:var(--sub)}
+.xpost-vbadge{color:#1d9bf0;font-size:9.5px;margin-left:1px}
+.xpost-text{font-size:10px;color:#e2e8f0;line-height:1.5;margin-bottom:5px}
+.xpost-meta{display:flex;justify-content:space-between;align-items:center}
+.xpost-time{font-size:8.5px;color:rgba(255,255,255,.28)}
+.xpost-src{font-size:8px;color:var(--ship);background:rgba(34,211,238,.08);border-radius:3px;padding:1px 5px}
+.xpost-actions{display:flex;gap:10px}
+.xpost-act{font-size:8.5px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:3px}
+.xnew{animation:xslide .4s ease}
+@keyframes xslide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="live-pill"><div class="live-dot"></div><span class="live-txt">LIVE</span></div>
+    <div>
+      <div class="tb-title">Iran · Israel · USA — Conflict Overview 2024–2026</div>
+      <div class="tb-sub">Missiles · Drones · Airstrikes · US Navy · Live Attack Lines · As of: March 2026</div>
+    </div>
+  </div>
+  <div class="tb-legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--iran)"></div><span style="font-size:13px;line-height:1">🇮🇷</span> Iran</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--israel)"></div><span style="font-size:13px;line-height:1">🇮🇱</span> Israel</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--usa)"></div><span style="font-size:13px;line-height:1">🇺🇸</span> USA</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ship)"></div><span style="font-size:12px;line-height:1">⚓</span> US Fleet</div>
+    <div class="tb-src">Wikipedia · Al Jazeera · CNN · NPR · USNI · As of: 21 Mar 2026</div>
+  </div>
+</div>
+
+<div class="lpanel">
+    <div class="sec">
+      <div class="sec-ttl">Overall Statistics</div>
+      <div class="stats">
+        <div class="scard r"><div class="sval">1.444+</div><div class="slbl">Iran Deaths (Mar 26)</div></div>
+        <div class="scard b"><div class="sval">31+</div><div class="slbl">Israel+Gulf Deaths</div></div>
+        <div class="scard a"><div class="sval">13</div><div class="slbl">US Soldiers KIA</div></div>
+        <div class="scard g"><div class="sval">Day 22</div><div class="slbl">War Duration (Feb–Mar)</div></div>
+      </div>
+      <div class="stats" style="margin-top:6px">
+        <div class="scard r"><div class="sval">2.370+</div><div class="slbl">Iran Missiles Total</div></div>
+        <div class="scard b"><div class="sval">4.400+</div><div class="slbl">Iran Drones Total</div></div>
+        <div class="scard a"><div class="sval">7.000+</div><div class="slbl">Targets (USA+IL)</div></div>
+        <div class="scard g"><div class="sval">~85%</div><div class="slbl">Intercept Rate IL</div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-ttl">Filter Phase</div>
+      <div class="pbtn on" onclick="filterPhase('all',this)">
+        <div><div class="pbtn-date">2024–2026</div><div class="pbtn-name">All Events</div></div>
+        <div class="ptag all">ALL</div>
+      </div>
+      <div class="pbtn" onclick="filterPhase('apr2024',this)">
+        <div><div class="pbtn-date">13. Apr 2024</div><div class="pbtn-name">True Promise I</div></div>
+        <div class="ptag ir">IRAN</div>
+      </div>
+      <div class="pbtn" onclick="filterPhase('oct2024',this)">
+        <div><div class="pbtn-date">01. Oct 2024</div><div class="pbtn-name">True Promise II</div></div>
+        <div class="ptag ir">IRAN</div>
+      </div>
+      <div class="pbtn" onclick="filterPhase('jun2025',this)">
+        <div><div class="pbtn-date">13–24. Jun 2025</div><div class="pbtn-name">12-Day War</div></div>
+        <div class="ptag all">JOINT</div>
+      </div>
+      <div class="pbtn" onclick="filterPhase('feb2026',this)">
+        <div><div class="pbtn-date">Feb 2026 →</div><div class="pbtn-name">Iran War 2026</div></div>
+        <div class="ptag all">ACTIVE</div>
+      </div>
+    </div>
+    <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
+    <div class="tl" id="tl"></div>
+  </div>
+
+<div id="map"></div>
+<div class="map-hint">Click line or marker for details · Scroll to zoom</div>
+
+<!-- ATTACK ALERT BANNER (hidden by default, shown via JS) -->
+<div id="attack-alert" style="display:none"></div>
+
+<!-- X BREAKING NEWS TOAST (hidden by default, shown via JS) -->
+<div id="x-toast" style="display:none"></div>
+
+<div class="rpanel">
+    <!-- LIVE NEWS FEED -->
+    <div class="sec" style="padding-bottom:10px">
+      <div class="sec-ttl" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="live-dot"></div>
+          <span style="font-size:11px;font-weight:800;color:#f1f5f9">LIVE NEWS</span>
+          <span id="feed-status" style="font-size:7.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(100,116,139,.2);border:1px solid rgba(100,116,139,.3);color:#94a3b8;letter-spacing:.5px">LOADING…</span>
+        </div>
+        <div style="display:flex;gap:5px;align-items:center">
+          <span style="font-size:8px;color:#94a3b8" id="xfeed-ts">–</span>
+          <button onclick="loadLiveNews(true)" style="font-size:8px;background:none;border:1px solid var(--border);border-radius:4px;padding:2px 6px;cursor:pointer;color:var(--sub);font-family:inherit" title="Refresh">↻</button>
+        </div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,.25);margin-bottom:6px;padding:3px 6px;background:rgba(255,255,255,.03);border-radius:4px;line-height:1.4">
+        Sources: Al Jazeera · BBC · Reuters · GDELT (real-time news database)
+      </div>
+      <div class="xfeed-wrap" id="xfeed"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-ttl">Selected Event</div>
+      <div id="detail"><div class="detail-empty">Click an attack line or marker.</div></div>
+    </div>
+    <div class="sec">
+      <div class="sec-ttl">Total Weapons Used</div>
+      <div id="wbars"></div>
+    </div>
+    <button class="btn-anim" id="animBtn" onclick="runAnimation()">▶ Animate Attacks</button>
+    <div class="sec" style="padding-bottom:4px">
+      <div class="sec-ttl">US Fleet Deployed</div>
+      <div id="ship-list"></div>
+    </div>
+    <!-- PERSONNEL BASES -->
+    <div class="sec" style="padding-bottom:6px">
+      <div class="sec-ttl">US Bases — Personnel</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:2px">
+        <div class="scard" style="cursor:pointer" onclick="map.setView([25.12,51.31],7,{animate:true})">
+          <div class="sval" style="font-size:14px;color:var(--ship)">~10.000</div>
+          <div class="slbl">Al Udeid (Qatar)</div>
+        </div>
+        <div class="scard" style="cursor:pointer" onclick="map.setView([26.22,50.59],7,{animate:true})">
+          <div class="sval" style="font-size:14px;color:var(--ship)">~7.000</div>
+          <div class="slbl">Bahrain 5th Fleet</div>
+        </div>
+        <div class="scard" style="cursor:pointer" onclick="map.setView([33.36,42.44],7,{animate:true})">
+          <div class="sval" style="font-size:14px;color:var(--usa)">~2.500</div>
+          <div class="slbl">Ain Al-Assad (Iraq)</div>
+        </div>
+        <div class="scard" style="cursor:pointer" onclick="map.setView([33.50,38.70],7,{animate:true})">
+          <div class="sval" style="font-size:14px;color:var(--sub)">~300</div>
+          <div class="slbl">Al-Tanf (Jordan)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CASUALTY TRACKER -->
+    <div class="sec">
+      <div class="sec-ttl" style="display:flex;align-items:center;gap:6px">
+        <div class="live-dot" style="width:5px;height:5px;background:#dc2626"></div>
+        Casualties (Reported)
+      </div>
+      <div style="font-size:9px;color:#94a3b8;margin-bottom:8px;line-height:1.4;padding:5px 7px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);border-radius:5px">
+        ⚠️ Real-time military data is classified. Figures based on public reports (Wikipedia, Al Jazeera, AP).
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--sub);letter-spacing:.8px;margin-bottom:5px">APR – OCT 2024</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+        <div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--iran)">7</div>
+          <div style="font-size:8px;color:rgba(248,113,113,.6);margin-top:1px">Iran<br>killed</div>
+        </div>
+        <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--israel)">~0</div>
+          <div style="font-size:8px;color:rgba(96,165,250,.6);margin-top:1px">Israel<br>killed</div>
+        </div>
+        <div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--usa)">0</div>
+          <div style="font-size:8px;color:rgba(251,191,36,.6);margin-top:1px">USA<br>killed</div>
+        </div>
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--sub);letter-spacing:.8px;margin-bottom:5px">12-DAY WAR JUN 2025</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+        <div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--iran)">585+</div>
+          <div style="font-size:8px;color:rgba(248,113,113,.6);margin-top:1px">Iran<br>Military</div>
+        </div>
+        <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--israel)">~34</div>
+          <div style="font-size:8px;color:rgba(96,165,250,.6);margin-top:1px">Israel<br>Military+Civilian</div>
+        </div>
+        <div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:12px;font-weight:800;color:var(--usa)">0</div>
+          <div style="font-size:8px;color:rgba(251,191,36,.6);margin-top:1px">USA<br>killed</div>
+        </div>
+      </div>
+      <div style="font-size:9px;font-weight:700;color:var(--sub);letter-spacing:.8px;margin-bottom:5px">IRAN WAR FEB–MAR 2026 ● (Day 22)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:8px">
+        <div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:var(--iran)">1.444+</div>
+          <div style="font-size:8px;color:rgba(248,113,113,.6);margin-top:1px">Iran<br>confirmed</div>
+        </div>
+        <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:var(--israel)">39+</div>
+          <div style="font-size:8px;color:rgba(96,165,250,.6);margin-top:1px">Israel+Gulf<br>killed</div>
+        </div>
+        <div style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);border-radius:5px;padding:6px 8px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:var(--usa)">13</div>
+          <div style="font-size:8px;color:rgba(251,191,36,.6);margin-top:1px">USA<br>KIA</div>
+        </div>
+      </div>
+      <div style="font-size:8px;color:#94a3b8;line-height:1.4;padding:4px 7px;background:rgba(255,255,255,.04);border-radius:4px;margin-bottom:6px">As of: 21 Mar 2026 · Sources: Al Jazeera, AP, NBC, CNN</div>
+      <a class="src-link" href="https://www.aljazeera.com/news/2026/3/21/iran-war-what-is-happening-on-day-22-of-us-israel-attacks" target="_blank">↗ Al Jazeera: Day 22 Liveblog</a>
+      <a class="src-link" href="https://www.aljazeera.com/news/2026/3/1/us-israel-attacks-on-iran-death-toll-and-injuries-live-tracker" target="_blank">↗ Al Jazeera Live Casualty Tracker</a>
+      <a class="src-link" href="https://en.wikipedia.org/wiki/2026_Iran_war" target="_blank">↗ Wikipedia: 2026 Iran War</a>
+    </div>
+
+    <div class="sec">
+      <div class="sec-ttl">Sources</div>
+      <a class="src-link" href="https://en.wikipedia.org/wiki/Twelve-Day_War" target="_blank">↗ Wikipedia: 12-Day War</a>
+      <a class="src-link" href="https://en.wikipedia.org/wiki/2026_Iran_war" target="_blank">↗ Wikipedia: 2026 Iran War</a>
+      <a class="src-link" href="https://www.britannica.com/event/12-Day-War" target="_blank">↗ Britannica: 12-Day War</a>
+      <a class="src-link" href="https://www.aljazeera.com/news/2026/3/1/us-israel-attacks-on-iran-death-toll-and-injuries-live-tracker" target="_blank">↗ Al Jazeera Live Tracker</a>
+      <a class="src-link" href="https://news.usni.org" target="_blank">↗ USNI News (Fleet)</a>
+    </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// LOCATIONS
+// ════════════════════════════════════════════
+const LOC={
+  tehran:    {lat:35.69,lng:51.39, name:"Tehran",            cc:"Iran",   t:"capital", desc:"Capital, IRGC Command. Death of Khamenei Feb 2026."},
+  natanz:    {lat:33.72,lng:51.73, name:"Natanz",             cc:"Iran",   t:"nuclear", desc:"Nuclear facility — uranium enrichment. Struck by USA+Israel."},
+  fordow:    {lat:34.89,lng:50.99, name:"Fordow",             cc:"Iran",   t:"nuclear", desc:"Deepest nuclear facility (80m). Target of Operation Midnight Hammer Jun 2025."},
+  isfahan:   {lat:32.66,lng:51.68, name:"Isfahan",            cc:"Iran",   t:"mil",     desc:"Air base & arms factories. Struck by Israel."},
+  mashhad:   {lat:36.30,lng:59.61, name:"Mashhad",            cc:"Iran",   t:"mil",     desc:"Military base North-East. Struck by Israel Oct 2024."},
+  karaj:     {lat:35.83,lng:50.99, name:"Karaj",              cc:"Iran",   t:"mil",     desc:"Missile factory. Target of Israeli strikes."},
+  bandarabbas:{lat:27.19,lng:56.27,name:"Bandar Abbas",       cc:"Iran",   t:"navy",    desc:"Iranian naval base. Strait of Hormuz."},
+  damascus:  {lat:33.51,lng:36.29, name:"Damascus",           cc:"Syria",  t:"strike",  desc:"Iranian Consulate — destroyed by Israel Apr 2024. Trigger for Operation True Promise I."},
+  telaviv:   {lat:32.09,lng:34.79, name:"Tel Aviv",           cc:"Israel", t:"capital", desc:"Economic & military center. Iron Dome HQ."},
+  jerusalem: {lat:31.77,lng:35.21, name:"Jerusalem",          cc:"Israel", t:"capital", desc:"Capital of Israel."},
+  nevatim:   {lat:31.21,lng:35.01, name:"Nevatim AFB",        cc:"Israel", t:"mil",     desc:"Air base. Direct hit Apr 2024."},
+  haifa:     {lat:32.79,lng:34.99, name:"Haifa",              cc:"Israel", t:"city",    desc:"Port & refinery. Strikes Jun 2025 & 2026."},
+  dimona:    {lat:31.00,lng:35.15, name:"Dimona",             cc:"Israel", t:"nuclear", desc:"Israeli nuclear center."},
+  udeid:     {lat:25.12,lng:51.31, name:"Al Udeid (Qatar)",   cc:"USA",    t:"base",    personnel:"~10.000", desc:"Largest US air base in the Middle East. B-2 operations Jun 2025."},
+  bahrain:   {lat:26.22,lng:50.59, name:"Bahrain 5th Fleet",  cc:"USA",    t:"base",    personnel:"~7.000",  desc:"US Navy HQ Middle East. 5th Fleet Headquarters."},
+  ainasad:   {lat:33.36,lng:42.44, name:"Ain Al-Assad (Iraq)",cc:"USA",    t:"base",    personnel:"~2.500",  desc:"Attacked by Iran 2026. Missile strikes Jan & Mar 2026."},
+  tanf:      {lat:33.50,lng:38.70, name:"Al-Tanf (Jordan)",cc:"USA",    t:"base",    personnel:"~300",    desc:"US base at Syria/Jordan border."},
+  // Ships – crew includes air wing where applicable
+  ford:      {lat:34.10,lng:32.50, name:"USS Gerald R. Ford (CVN-78)", cc:"USA", t:"carrier",   crew:"~5.000 (incl. Air Wing)", desc:"E. Mediterranean. Deployed Oct 2023. Drone defense Apr 2024. Next-gen carrier, latest catapult tech."},
+  truman:    {lat:35.50,lng:24.00, name:"USS Harry S. Truman (CVN-75)",cc:"USA", t:"carrier",   crew:"~5.000 (incl. Air Wing)", desc:"Mediterranean 2024. Intercepted Iranian drones with F/A-18. Nimitz-class."},
+  lincoln:   {lat:23.80,lng:58.50, name:"USS Abraham Lincoln (CVN-72)",cc:"USA", t:"carrier",   crew:"~5.000 (incl. Air Wing)", desc:"Arabian Sea 2026. Strike operations against Iran. 2nd carrier group deployed Feb 2026."},
+  roosevelt: {lat:20.50,lng:62.00, name:"USS Theodore Roosevelt (CVN-71)",cc:"USA",t:"carrier", crew:"~5.000 (incl. Air Wing)", desc:"Arabian Sea 2025–26. 2nd carrier group. Nimitz-class."},
+  ike:       {lat:14.00,lng:43.50, name:"USS Dwight D. Eisenhower (CVN-69)",cc:"USA",t:"carrier",crew:"~4.500 (incl. Air Wing)", desc:"Red Sea 2023–24. Houthi operations, Iran deterrence. Nimitz-class."},
+  carney:    {lat:33.40,lng:35.80, name:"USS Carney (DDG-64)",         cc:"USA", t:"destroyer", crew:"~281",                    desc:"E. Mediterranean. Shot down 70+ drones/missiles since Oct 2023. Arleigh Burke-class."},
+  mason:     {lat:16.00,lng:41.00, name:"USS Mason (DDG-87)",          cc:"USA", t:"destroyer", crew:"~280",                    desc:"Red Sea. Houthi + Iran missile defense. Arleigh Burke-class Fl. IIA."},
+  laboon:    {lat:37.50,lng:23.00, name:"USS Laboon (DDG-58)",         cc:"USA", t:"destroyer", crew:"~279",                    desc:"Mediterranean. Drone defense Apr 2024. Arleigh Burke-class."},
+};
+
+const ATTACKS=[
+  // lift=arc height; shift=lateral offset; w=line weight (thin for realism)
+  {id:"a0",phase:"apr2024",date:"1. Apr 2024",from:"nevatim",to:"damascus",lift:0.08,shift:0,
+   title:"Israel → Iran's Consulate Damascus",
+   desc:"Israel bombs Iranian embassy building in Damascus. 7 IRGC officers killed including Brig.-Gen. Mohammad Reza Zahedi. Direct trigger for Operation True Promise I.",
+   att:"israel",drones:0,cruise:4,ballistic:0,abf:"—",schaden:"Consulate destroyed, 7 IRGC killed",color:"#2563eb",w:1},
+  {id:"a1",phase:"apr2024",date:"13.–14. Apr 2024",from:"tehran",to:"nevatim",lift:0.14,shift:0.04,
+   title:"Operation True Promise I — 170 Drones + 120 Missiles",
+   desc:"Iran's first direct attack on Israel. 170 Shahed-136 drones, 32 Emad cruise missiles, 120 Shahab/Ghadr ballistic missiles. USA, UK, Jordan, France and Israel intercept ~99%. Only Nevatim AFB lightly hit.",
+   att:"iran",drones:170,cruise:32,ballistic:120,abf:"~99%",schaden:"Nevatim AFB lightly damaged",color:"#dc2626",w:1.8},
+  {id:"a2",phase:"apr2024",date:"18. Apr 2024",from:"nevatim",to:"isfahan",lift:0.10,shift:-0.05,
+   title:"Israel → Isfahan — limited retaliation",
+   desc:"Israel fires 3 drones at military radar near Isfahan. Symbolic response — deliberately minimal to avoid escalation. No attack on nuclear facilities.",
+   att:"israel",drones:3,cruise:0,ballistic:0,abf:"Partial",schaden:"Radar lightly damaged",color:"#2563eb",w:0.8},
+  {id:"b1",phase:"oct2024",date:"01. Oct 2024",from:"tehran",to:"telaviv",lift:0.22,shift:0.05,
+   title:"Operation True Promise II — ~200 Ballistic Missiles",
+   desc:"Response to deaths of Haniyeh (31 Jul) and Nasrallah (27 Sep). 181 ballistic Emad/Fattah missiles in 2 waves — ~90% intercepted by Arrow-3, David's Sling, Iron Dome. First time hits on Israeli military site.",
+   att:"iran",drones:0,cruise:0,ballistic:200,abf:"~90%",schaden:"Military sites hit — little damage",color:"#dc2626",w:1.6},
+  {id:"b2",phase:"oct2024",date:"26. Oct 2024",from:"nevatim",to:"mashhad",lift:0.22,shift:0.04,
+   title:"Israel → Missile Factories Isfahan · Mashhad · Karaj",
+   desc:"Israel attacks with F-35I Adir bombers on arms plants in Isfahan, Karaj and Mashhad. Destroyed: Shahab assembly plants, solid rocket motor storage, S-300 radar. Strongest Israeli strike on Iran to date.",
+   att:"israel",drones:20,cruise:5,ballistic:0,abf:"Partial",schaden:"Missile factories & S-300 radar destroyed",color:"#2563eb",w:1.2},
+  {id:"c1",phase:"jun2025",date:"13. Jun 2025",from:"nevatim",to:"natanz",lift:0.17,shift:0.06,
+   title:"Operation Rising Lion — Start of 12-Day War",
+   desc:"Coordinated Israeli surprise attack with dozens of F-35I on Natanz, Isfahan and 5 air bases simultaneously. Start of Twelve-Day War (13–24 Jun 2025). Iran's air defense overwhelmed.",
+   att:"israel",drones:60,cruise:25,ballistic:0,abf:"Partial",schaden:"Natanz centrifuge halls destroyed, 5 air bases struck",color:"#2563eb",w:1.4},
+  {id:"c2",phase:"jun2025",date:"13.–22. Jun 2025",from:"tehran",to:"telaviv",lift:0.34,shift:-0.04,
+   title:"Iran → 550 Missiles + 1,000 Drones on Israel",
+   desc:"Iran's most massive attack ever. 550+ Fattah/Emad missiles and 1,000+ Shahed-136/131 drones in multiple waves over 9 days. ~85% intercepted. Hits in Tel Aviv, Haifa, Beersheba. ~30 Israel killed.",
+   att:"iran",drones:1000,cruise:0,ballistic:550,abf:"~85%",schaden:"Tel Aviv, Haifa, Beersheba; 1 hospital; ~30 killed",color:"#dc2626",w:2.4},
+  {id:"c3",phase:"jun2025",date:"22. Jun 2025",from:"udeid",to:"fordow",lift:0.20,shift:0,
+   title:"Operation Midnight Hammer — B-2 Spirit → 3 Nuclear Sites",
+   desc:"6 B-2 Spirit from Diego Garcia and Al Udeid with 14 GBU-57A/B Massive Ordnance Penetrators (14t each). Targets: Natanz, Fordow (80m deep), Isfahan. First direct US strike on Iran's nuclear program in history.",
+   att:"usa",drones:0,cruise:30,ballistic:0,abf:"—",schaden:"Fordow bunker breached, Natanz halls destroyed",color:"#d97706",w:1.8},
+  {id:"c4",phase:"jun2025",date:"22.–24. Jun 2025",from:"tehran",to:"udeid",lift:0.07,shift:-0.05,
+   title:"Iran → Al Udeid · Bahrain · Ain Al-Assad",
+   desc:"Fateh-110/Zolfaghar missiles on Al Udeid (Qatar), Bahrain 5th Fleet and Ain Al-Assad (Iraq). Ceasefire 24 Jun via US pressure — Iran believed Fordow was completely destroyed.",
+   att:"iran",drones:50,cruise:10,ballistic:20,abf:"Most",schaden:"Perimeter damage Al Udeid; 4 US soldiers wounded",color:"#dc2626",w:0.9},
+  {id:"d1",phase:"feb2026",date:"28. Feb 2026",from:"nevatim",to:"tehran",lift:0.28,shift:-0.05,
+   title:"USA+Israel Kill Khamenei — Iran War 2026",
+   desc:"US Tomahawks + Israeli F-35I kill Ayatollah Khamenei and IRGC leadership. IRGC-HQ Malek-Ashtar complex destroyed. On 8 Mar the Expert Assembly appoints Mojtaba Khamenei (son) as new Supreme Leader. (Source: Al Jazeera, NPR, Feb/Mar 2026)",
+   att:"israel",drones:100,cruise:50,ballistic:0,abf:"Partial",schaden:"Khamenei killed; IRGC-HQ destroyed; new leader: Mojtaba Khamenei",color:"#2563eb",w:1.8},
+  {id:"d2",phase:"feb2026",date:"28. Feb – 21. Mar 2026",from:"lincoln",to:"natanz",lift:0.18,shift:0,
+   title:"USA → 7,000+ Targets: Mass strikes on Iran",
+   desc:"USS Lincoln + Roosevelt + B-2 bombers strike 7,000+ military targets. Oil price >$110/barrel. Hormuz Strait blocked. US strike on primary school in Iran kills ~170 children (Amnesty International, Mar 2026). Netanyahu 19 Mar: 'Iran can no longer enrich uranium.'",
+   att:"usa",drones:0,cruise:300,ballistic:0,abf:"—",schaden:"1,444+ Iran deaths; nuclear program halted; Hormuz blocked",color:"#d97706",w:2.4},
+  {id:"d3",phase:"feb2026",date:"Mar 2026",from:"tehran",to:"haifa",lift:0.10,shift:0.07,
+   title:"Iran → 2,000 Drones + 500 Missiles on Israel/Gulf",
+   desc:"New Supreme Leader Mojtaba Khamenei orders retaliation. By 21 Mar: 500+ ballistic missiles + ~2,000 drones. Iran also attacks Qatar, Saudi Arabia, UAE. 18 Israel killed, 21 Gulf states killed. 21 attacks on merchant ships in Hormuz.",
+   att:"iran",drones:2000,cruise:0,ballistic:500,abf:"~80%",schaden:"18 Israel killed; 21 Gulf states killed; ships attacked",color:"#dc2626",w:1.6},
+  {id:"d4",phase:"feb2026",date:"Mar 2026",from:"tehran",to:"ainasad",lift:0.06,shift:0.08,
+   title:"Iran → 27 US Bases in 9 Countries",
+   desc:"Iran attacks US bases in Bahrain, Iraq, Jordan, Kuwait, Oman, Qatar, Saudi Arabia, Syria and UAE. 13 US soldiers KIA (as of 21 Mar 2026). Trump: 'There will be no deal with Iran except UNCONDITIONAL SURRENDER!' (CNN, Mar 2026)",
+   att:"iran",drones:200,cruise:30,ballistic:50,abf:"Most",schaden:"US bases in 9 countries; 13 US soldiers KIA",color:"#dc2626",w:1.2},
+];
+
+const SHIPS_DATA=[
+  {id:"ford",     phases:"Apr 2024 · Jun 2025"},
+  {id:"truman",   phases:"Apr 2024 · Oct 2024"},
+  {id:"ike",      phases:"Apr 2024"},
+  {id:"lincoln",  phases:"Feb 2026 →"},
+  {id:"roosevelt",phases:"Jun 2025 · Feb 2026"},
+  {id:"carney",   phases:"Apr 2024 · Jun 2025"},
+  {id:"mason",    phases:"Apr 2024"},
+  {id:"laboon",   phases:"Apr 2024"},
+];
+
+// ════════════════════════════════════════════
+// MAP INIT
+// ════════════════════════════════════════════
+window.addEventListener('resize',()=>map.invalidateSize());
+
+const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
+L.control.attribution({position:'bottomright',prefix:'© OpenStreetMap / CARTO'}).addTo(map);
+setTimeout(()=>map.invalidateSize(),150);
+setTimeout(()=>map.invalidateSize(),500);
+
+// ════════════════════════════════════════════
+// PLACE MARKERS
+// ════════════════════════════════════════════
+const CC={Iran:'#f04040',Israel:'#4b8ef5',USA:'#f5a623',Syria:'#a78bfa'};
+const FLAGS={Iran:'🇮🇷',Israel:'🇮🇱',USA:'🇺🇸',Syria:'🇸🇾'};
+
+const ALL_MARKERS={};
+
+function placeMarkers(){
+  Object.entries(LOC).forEach(([k,loc])=>{
+    const ship = loc.t==='carrier'||loc.t==='destroyer';
+    const col  = ship?'#0891b2':(CC[loc.cc]||'#6b7280');
+    const sz   = ship?(loc.t==='carrier'?16:12):(['capital','nuclear'].includes(loc.t)?14:10);
+    const shape= ship?'5px':'50%';
+    const flag = FLAGS[loc.cc]||'📍';
+
+    // Icon: flag emoji + colored ring
+    const ic = L.divIcon({
+      className:'',
+      html:`<div style="position:relative;width:${sz+8}px;height:${sz+8}px;display:flex;align-items:center;justify-content:center">
+        <div style="position:absolute;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};border:2px solid #fff;box-shadow:0 2px 6px ${col}80,0 0 0 1px ${col}40"></div>
+        <span style="position:relative;font-size:${sz*0.75}px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${ship?(loc.t==='carrier'?'✈':'🎯'):flag}</span>
+      </div>`,
+      iconSize:[sz+8,sz+8],iconAnchor:[(sz+8)/2,(sz+8)/2]
+    });
+
+    const m=L.marker([loc.lat,loc.lng],{icon:ic,zIndexOffset:ship?600:(['capital'].includes(loc.t)?200:0)}).addTo(map);
+
+    // Label for important locations — with flag
+    if(['capital','nuclear','base'].includes(loc.t)||ship){
+      const lsz=ship?9:(['capital','nuclear'].includes(loc.t)?10:9);
+      const lcol=ship?'#0369a1':col;
+      const labelFlag=ship?'🇺🇸':flag;
+      const shortName=loc.name.split('(')[0].trim();
+      L.marker([loc.lat,loc.lng],{
+        icon:L.divIcon({
+          className:'',
+          html:`<div style="font-family:'Inter',sans-serif;font-size:${lsz}px;font-weight:700;color:${lcol};white-space:nowrap;text-shadow:1px 1px 0 #fff,-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,0 2px 6px rgba(255,255,255,.95);margin-top:${sz/2+6}px;margin-left:-60px;text-align:center;width:120px;">${labelFlag} ${shortName}</div>`,
+          iconSize:[120,18],iconAnchor:[60,-sz/2-3]
+        }),interactive:false
+      }).addTo(map);
+    }
+
+    m.bindPopup(()=>{
+      const flag=FLAGS[loc.cc]||'📍';
+      return ship?`
+        <div>
+          <div class="ship-badge">⚓ US NAVY ${loc.t==='carrier'?'CARRIER':'DESTROYER'}</div>
+          <div class="pu-title">${loc.name}</div>
+          <div class="pu-sub">United States Navy</div>
+          <div class="pu-div"></div>
+          <div class="pu-desc">${loc.desc}</div>
+        </div>`:
+        `<div>
+          <div class="pu-title">${flag} ${loc.name}</div>
+          <div class="pu-sub">${loc.cc} · ${loc.t}</div>
+          <div class="pu-div"></div>
+          <div class="pu-desc">${loc.desc}</div>
+        </div>`;
+    },{maxWidth:260});
+
+    if(ship) m.on('click',()=>showShipDetail(k));
+    ALL_MARKERS[k]=m;
+  });
+}
+placeMarkers();
+
+// ════════════════════════════════════════════
+// BEZIER + FLOW LINES
+// ════════════════════════════════════════════
+function bez(p0,p1,lift=0.16,shift=0){
+  const span=Math.abs(p0[1]-p1[1]);
+  const mid=[(p0[0]+p1[0])/2+span*lift,(p0[1]+p1[1])/2+span*shift];
+  const pts=[];
+  for(let t=0;t<=1;t+=0.012){
+    pts.push([(1-t)*(1-t)*p0[0]+2*(1-t)*t*mid[0]+t*t*p1[0],(1-t)*(1-t)*p0[1]+2*(1-t)*t*mid[1]+t*t*p1[1]]);
+  }
+  return pts;
+}
+
+const LAYERS={};
+
+function applyFlow(polyline,att,w){
+  requestAnimationFrame(()=>{
+    const el=polyline.getElement();
+    if(!el) return;
+    // Speed & dash based on attacker
+    const dash = att==='iran'?'14 8':att==='israel'?'12 10':'16 6';
+    const dur  = att==='iran'?'1.1s':att==='israel'?'1.4s':'0.9s';
+    el.style.strokeDasharray=dash;
+    el.style.animation=`flow ${dur} linear infinite`;
+  });
+}
+
+const ATT_FLAGS={iran:'🇮🇷',israel:'🇮🇱',usa:'🇺🇸'};
+const ATT_LABELS={iran:'🇮🇷 IR',israel:'🇮🇱 IL',usa:'🇺🇸 US'};
+
+function drawAttacks(phase){
+  Object.values(LAYERS).forEach(l=>{
+    if(l.bg&&map.hasLayer(l.bg))map.removeLayer(l.bg);
+    if(l.fg&&map.hasLayer(l.fg))map.removeLayer(l.fg);
+    if(l.dot&&map.hasLayer(l.dot))map.removeLayer(l.dot);
+    if(l.flagStart&&map.hasLayer(l.flagStart))map.removeLayer(l.flagStart);
+    if(l.flagMid&&map.hasLayer(l.flagMid))map.removeLayer(l.flagMid);
+  });
+  const list=phase==='all'?ATTACKS:ATTACKS.filter(a=>a.phase===phase);
+  list.forEach(atk=>{
+    const from=LOC[atk.from],to=LOC[atk.to];
+    if(!from||!to)return;
+    const pts=bez([from.lat,from.lng],[to.lat,to.lng],atk.lift||0.16,atk.shift||0);
+
+    // Glow layer
+    const bg=L.polyline(pts,{color:atk.color,weight:atk.w*3,opacity:0.06,interactive:false}).addTo(map);
+    // Flowing line
+    const fg=L.polyline(pts,{color:atk.color,weight:atk.w,opacity:0.88}).addTo(map);
+    applyFlow(fg,atk.att,atk.w);
+
+    // Target impact dot
+    const ep=pts[pts.length-1];
+    const dot=L.circleMarker(ep,{radius:4,color:atk.color,fillColor:atk.color,fillOpacity:1,weight:1.5,color:'#fff'}).addTo(map);
+
+    // ── Attacker flag badge at ~18% of path (near origin) ──
+    const startIdx=Math.floor(pts.length*0.18);
+    const startPt=pts[startIdx]||pts[0];
+    const attFlag=ATT_FLAGS[atk.att]||'🎯';
+    const flagStart=L.marker(startPt,{
+      icon:L.divIcon({
+        className:'',
+        html:`<div style="
+          background:${atk.color};border-radius:20px;
+          padding:2px 5px 2px 3px;
+          font-size:11px;line-height:1.3;
+          display:flex;align-items:center;gap:2px;
+          box-shadow:0 2px 6px rgba(0,0,0,.25);
+          border:1.5px solid rgba(255,255,255,.7);
+          white-space:nowrap;pointer-events:none;
+        "><span style="font-size:12px">${attFlag}</span><span style="font-size:7px;font-weight:800;color:#fff;font-family:Inter,sans-serif;letter-spacing:.3px">ATK</span></div>`,
+        iconSize:[38,20],iconAnchor:[19,10]
+      }),
+      interactive:false,zIndexOffset:300
+    }).addTo(map);
+
+    // ── Direction label at midpoint (55% of path) ──
+    const midIdx=Math.floor(pts.length*0.55);
+    const midPt=pts[midIdx]||pts[Math.floor(pts.length/2)];
+    const toLoc=LOC[atk.to];
+    const toFlag=FLAGS[toLoc?.cc]||'🎯';
+    const flagMid=L.marker(midPt,{
+      icon:L.divIcon({
+        className:'',
+        html:`<div style="
+          background:rgba(255,255,255,.92);
+          border:1px solid ${atk.color}55;
+          border-radius:3px;padding:1px 5px;
+          font-size:8px;font-weight:700;color:${atk.color};
+          font-family:'Inter',sans-serif;white-space:nowrap;
+          box-shadow:0 1px 4px rgba(0,0,0,.12);
+          pointer-events:none;
+        ">${attFlag}→${toFlag}</div>`,
+        iconSize:[36,14],iconAnchor:[18,7]
+      }),
+      interactive:false,zIndexOffset:200
+    }).addTo(map);
+
+    fg.on('click',()=>showDetail(atk));
+    fg.on('mouseover',()=>{fg.setStyle({opacity:1,weight:atk.w+1.5});document.body.style.cursor='pointer'});
+    fg.on('mouseout', ()=>{fg.setStyle({opacity:0.88,weight:atk.w});document.body.style.cursor=''});
+    bg.on('click',()=>showDetail(atk));
+    LAYERS[atk.id]={bg,fg,dot,flagStart,flagMid};
+  });
+}
+drawAttacks('all');
+
+// ════════════════════════════════════════════
+// DETAIL
+// ════════════════════════════════════════════
+function showDetail(atk){
+  const fL=LOC[atk.from],tL=LOC[atk.to];
+  const mx=Math.max(atk.drones,atk.cruise,atk.ballistic,1);
+  document.getElementById('detail').innerHTML=`
+    <div style="border-radius:7px;overflow:hidden;border:1px solid ${atk.color}28">
+      <div class="ev-hdr" style="background:${atk.color}14;border-bottom:1px solid ${atk.color}22">
+        <div class="ev-date" style="color:${atk.color}">${atk.date}</div>
+        <div class="ev-title">${atk.title}</div>
+      </div>
+      <div class="ev-body">
+        <div class="ev-row"><div class="ev-key">From</div><div class="ev-val">${fL?.name||atk.from}</div></div>
+        <div class="ev-row"><div class="ev-key">To</div><div class="ev-val">${tL?.name||atk.to}</div></div>
+        <div class="ev-row"><div class="ev-key">Intercepted</div><div class="ev-val" style="color:#22d3a0">${atk.abf}</div></div>
+        <div class="ev-row"><div class="ev-key">Damage</div><div class="ev-val">${atk.schaden}</div></div>
+        ${(atk.drones+atk.cruise+atk.ballistic)>0?`
+        <div style="margin-top:9px;padding-top:7px;border-top:1px solid var(--border)">
+          ${atk.drones>0?`<div class="wbar"><div class="wbar-top"><span class="wbar-lbl">🚁 Total Drones</span><span class="wbar-val">${atk.drones.toLocaleString()}</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(atk.drones/mx*100)}%;background:#a78bfa"></div></div></div>`:''}
+          ${atk.ballistic>0?`<div class="wbar"><div class="wbar-top"><span class="wbar-lbl">🚀 Ballistic Missiles</span><span class="wbar-val">${atk.ballistic.toLocaleString()}</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(atk.ballistic/mx*100)}%;background:${atk.color}"></div></div></div>`:''}
+          ${atk.cruise>0?`<div class="wbar"><div class="wbar-top"><span class="wbar-lbl">✈️ Cruise Missiles</span><span class="wbar-val">${atk.cruise.toLocaleString()}</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(atk.cruise/mx*100)}%;background:#f5a623"></div></div></div>`:''}
+        </div>`:''}
+        <div class="ev-desc">${atk.desc}</div>
+      </div>
+    </div>`;
+  // Highlight
+  Object.entries(LAYERS).forEach(([id,l])=>{
+    const a=ATTACKS.find(x=>x.id===id);
+    if(!a)return;
+    const active=id===atk.id;
+    l.fg.setStyle({opacity:active?1:0.1,weight:active?a.w+1.5:a.w});
+    l.bg.setStyle({opacity:active?.1:.015});
+    if(l.flagStart){const el=l.flagStart.getElement();if(el)el.style.opacity=active?'1':'0.2';}
+    if(l.flagMid){const el=l.flagMid.getElement();if(el)el.style.opacity=active?'1':'0.2';}
+  });
+  document.querySelectorAll('.tli').forEach(el=>el.classList.toggle('on',el.dataset.id===atk.id));
+  // Fly
+  if(fL&&tL){
+    map.fitBounds(L.latLngBounds([fL.lat,fL.lng],[tL.lat,tL.lng]).pad(.25),{animate:true,duration:.7});
+  }
+}
+
+function showShipDetail(k){
+  const loc=LOC[k],s=SHIPS_DATA.find(x=>x.id===k);
+  if(!loc)return;
+  document.getElementById('detail').innerHTML=`
+    <div style="border-radius:7px;overflow:hidden;border:1px solid rgba(45,212,191,.25)">
+      <div class="ev-hdr" style="background:rgba(45,212,191,.08);border-bottom:1px solid rgba(45,212,191,.2)">
+        <div class="ev-date" style="color:#2dd4bf">US NAVY ${loc.t==='carrier'?'CARRIER':'DESTROYER'}</div>
+        <div class="ev-title">${loc.name}</div>
+      </div>
+      <div class="ev-body">
+        <div class="ev-row"><div class="ev-key">Type</div><div class="ev-val">${loc.t==='carrier'?'Nuclear Carrier (Nimitz/Ford-class)':'Guided-Missile Destroyer (Arleigh Burke-class)'}</div></div>
+        ${loc.crew?`<div class="ev-row"><div class="ev-key">Crew</div><div class="ev-val" style="color:#0891b2;font-weight:700">👥 ${loc.crew}</div></div>`:''}
+        ${s?`<div class="ev-row"><div class="ev-key">Deployment</div><div class="ev-val" style="color:#2dd4bf">${s.phases}</div></div>`:''}
+        <div class="ev-desc" style="margin-top:6px">${loc.desc}</div>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+// TIMELINE
+// ════════════════════════════════════════════
+function buildTL(phase){
+  const tl=document.getElementById('tl');tl.innerHTML='';
+  const list=phase==='all'?ATTACKS:ATTACKS.filter(a=>a.phase===phase);
+  const tm={iran:'IRAN',israel:'ISRAEL',usa:'USA'};
+  const tc={iran:'ir',israel:'il',usa:'us'};
+  list.forEach(atk=>{
+    const d=document.createElement('div');d.className='tli';d.dataset.id=atk.id;
+    d.innerHTML=`<div class="tli-dot" style="background:${atk.color}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="tli-date">${atk.date}</div>
+        <div class="tli-name">${atk.title}</div>
+        <div class="tli-desc">${atk.desc}</div>
+      </div>
+      <div class="tli-tag ptag ${tc[atk.att]}">${tm[atk.att]}</div>`;
+    d.addEventListener('click',()=>showDetail(atk));
+    tl.appendChild(d);
+  });
+}
+buildTL('all');
+
+// ════════════════════════════════════════════
+// WEAPON BARS
+// ════════════════════════════════════════════
+function buildWbars(){
+  let dr=0,ba=0,cr=0;
+  ATTACKS.forEach(a=>{dr+=a.drones;ba+=a.ballistic;cr+=a.cruise});
+  const mx=Math.max(dr,ba,cr,1);
+  document.getElementById('wbars').innerHTML=`
+    <div class="wbar"><div class="wbar-top"><span class="wbar-lbl">🚁 Total Drones</span><span class="wbar-val">${dr.toLocaleString()}+</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(dr/mx*100)}%;background:#a78bfa"></div></div></div>
+    <div class="wbar"><div class="wbar-top"><span class="wbar-lbl">🚀 Ballistic Missiles</span><span class="wbar-val">${ba.toLocaleString()}+</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(ba/mx*100)}%;background:#f04040"></div></div></div>
+    <div class="wbar"><div class="wbar-top"><span class="wbar-lbl">✈️ Cruise Missiles</span><span class="wbar-val">${cr.toLocaleString()}+</span></div><div class="wbar-track"><div class="wbar-fill" style="width:${Math.round(cr/mx*100)}%;background:#f5a623"></div></div></div>`;
+}
+buildWbars();
+
+// ════════════════════════════════════════════
+// SHIP LIST
+// ════════════════════════════════════════════
+function buildShipList(){
+  document.getElementById('ship-list').innerHTML=SHIPS_DATA.map(s=>{
+    const loc=LOC[s.id];if(!loc)return'';
+    const big=loc.t==='carrier';
+    const n=loc.name.replace(/ \(CVN-\d+\)/,'').replace(/ \(DDG-\d+\)/,'');
+    return `<div class="ship-item" onclick="map.setView([${loc.lat},${loc.lng}],7,{animate:true});setTimeout(()=>ALL_MARKERS['${s.id}']?.openPopup(),400);showShipDetail('${s.id}')">
+      <div style="font-size:${big?18:13}px;flex-shrink:0">${big?'🛥️':'⛵'}</div>
+      <div style="flex:1;min-width:0"><div class="ship-name">${n}</div><div class="ship-role">${big?'Carrier':'Destroyer'} · ${loc.crew?'👥 '+loc.crew+' · ':''}<span style="color:#64748b">${s.phases}</span></div></div>
+    </div>`;
+  }).join('');
+}
+buildShipList();
+
+// ════════════════════════════════════════════
+// PHASE FILTER
+// ════════════════════════════════════════════
+function filterPhase(phase,btn){
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  drawAttacks(phase);
+  buildTL(phase);
+  document.getElementById('detail').innerHTML='<div class="detail-empty">Click an attack line for details.</div>';
+  Object.entries(LAYERS).forEach(([id,l])=>{
+    const a=ATTACKS.find(x=>x.id===id);
+    if(a){l.fg.setStyle({opacity:.88,weight:a.w});l.bg.setStyle({opacity:.06});if(l.flagStart){const el=l.flagStart.getElement();if(el)el.style.opacity='1';}if(l.flagMid){const el=l.flagMid.getElement();if(el)el.style.opacity='1';}}
+  });
+}
+
+// ════════════════════════════════════════════
+// X / LIVE FEED
+// ════════════════════════════════════════════
+
+let liveNewsCache=[];
+let lastLiveCount=0;
+let feedIsLive=false;
+
+// Detects if an article is Iran/Israel/USA relevant
+function isRelevant(title='',desc=''){
+  const t=(title+' '+desc).toLowerCase();
+  return /iran|israel|irgc|hezbollah|hamas|netanyahu|trump|tehran|hormuz|nuclear|missile|rocket|strike|attack|war|ceasefire|luftangriff|rakete|atomanlage|nahost/.test(t);
+}
+
+// Format date
+function fmtDate(d){
+  try{
+    const dt=new Date(d);
+    return dt.toLocaleString('en-US',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  }catch{return d||''}
+}
+
+// ════════════════════════════════════════════
+// LIVE NEWS ENGINE (GDELT + RSS2JSON — no API key needed)
+// ════════════════════════════════════════════
+
+const XPOSTS=[
+  {
+    av:"🇺🇸",avBg:"#1d4ed8",name:"Donald J. Trump",handle:"@realDonaldTrump",verified:true,
+    time:"Mar 21, 2026 · 14:23",
+    text:"We are getting very close to meeting our objectives as we consider winding down our great Military efforts in the Middle East with respect to the Terrorist Regime of Iran. MISSION ALMOST ACCOMPLISHED!",
+    likes:"623K",rt:"189K",src:"CNN · Mar 2026",flag:"usa"
+  },
+  {
+    av:"🇮🇱",avBg:"#1d4ed8",name:"Benjamin Netanyahu",handle:"@IsraeliPM",verified:true,
+    time:"Mar 19, 2026 · 09:17",
+    text:"Today Iran can no longer enrich uranium or build ballistic missiles. We have achieved what we came to do. The existential threat posed by the terrorist regime has been eliminated. Israel is safe.",
+    likes:"412K",rt:"134K",src:"Times of Israel",flag:"israel"
+  },
+  {
+    av:"🇺🇸",avBg:"#1d4ed8",name:"Donald J. Trump",handle:"@realDonaldTrump",verified:true,
+    time:"Mar 19, 2026 · 22:08",
+    text:"NO MORE ATTACKS WILL BE MADE BY ISRAEL pertaining to this extremely important and valuable South Pars Field unless Iran unwisely decides to attack a very innocent Qatar. Be SMART, Iran!",
+    likes:"547K",rt:"201K",src:"Axios · Mar 2026",flag:"usa"
+  },
+  {
+    av:"🕌",avBg:"#166534",name:"Mojtaba Khamenei (نیروهای مسلح)",handle:"@khamenei_ir",verified:true,
+    time:"Mar 17, 2026 · 18:44",
+    text:"The Islamic Republic will NEVER surrender. The Strait of Hormuz remains under our control. Every US soldier and every Israeli will pay for what they have done to the Iranian people. استقامت — Resistance.",
+    likes:"88K",rt:"51K",src:"Al Jazeera",flag:"iran"
+  },
+  {
+    av:"🇮🇱",avBg:"#1d4ed8",name:"Benjamin Netanyahu",handle:"@IsraeliPM",verified:true,
+    time:"Mar 17, 2026 · 11:30",
+    text:"This morning, we eliminated Ali Larijani. Ali Larijani was the commander of the Revolutionary Guards — that group of gangsters that effectively runs Iran. One less threat to our people.",
+    likes:"298K",rt:"96K",src:"Jerusalem Post",flag:"israel"
+  },
+  {
+    av:"🇺🇸",avBg:"#1d4ed8",name:"Donald J. Trump",handle:"@realDonaldTrump",verified:true,
+    time:"Mar 14, 2026 · 08:51",
+    text:"There will be NO DEAL with Iran except UNCONDITIONAL SURRENDER! We are winning, BIGLY. The Iranian people deserve FREEDOM — take over your government NOW. This is your only chance!",
+    likes:"731K",rt:"264K",src:"NPR · Mar 2026",flag:"usa"
+  },
+  {
+    av:"🕌",avBg:"#166534",name:"IRGC Press Office",handle:"@IRGC_official",verified:false,
+    time:"Mar 12, 2026 · 03:22",
+    text:"🔴 ALERT: Islamic Revolutionary Guard Corps has launched 340 Shahed drones and 60 ballistic missiles targeting US bases in Bahrain, Qatar and Iraq. The enemy will not sleep peacefully.",
+    likes:"41K",rt:"28K",src:"Reuters · Mar 2026",flag:"iran"
+  },
+  {
+    av:"🇮🇱",avBg:"#1d4ed8",name:"Benjamin Netanyahu",handle:"@IsraeliPM",verified:true,
+    time:"Mar 8, 2026 · 20:15",
+    text:"To the brave people of Iran — I wish you a happy Nowruz. The age-old belief of your people: that light will triumph over darkness, that good will triumph over evil. Your liberation is near.",
+    likes:"187K",rt:"62K",src:"Times of Israel",flag:"israel"
+  },
+  {
+    av:"🇺🇸",avBg:"#1d4ed8",name:"Donald J. Trump",handle:"@realDonaldTrump",verified:true,
+    time:"Feb 28, 2026 · 23:59",
+    text:"Israel and the United States have just embarked on an operation to remove the existential threat posed by the terrorist regime in Iran. GOD BLESS OUR TROOPS! 🇺🇸🇮🇱",
+    likes:"892K",rt:"341K",src:"NBC News · Feb 2026",flag:"usa"
+  },
+];
+
+// Source → flag + color
+function srcStyle(domain=''){
+  if(/aljazeera/.test(domain)) return{av:'📡',bg:'#b45309',col:'#fbbf24',lbl:'Al Jazeera'};
+  if(/bbc/.test(domain))       return{av:'🇬🇧',bg:'#1d4ed8',col:'#60a5fa',lbl:'BBC News'};
+  if(/reuters/.test(domain))   return{av:'📰',bg:'#166534',col:'#34d399',lbl:'Reuters'};
+  if(/cnn/.test(domain))       return{av:'📺',bg:'#dc2626',col:'#f87171',lbl:'CNN'};
+  if(/nytimes|nyt/.test(domain))return{av:'📰',bg:'#374151',col:'#9ca3af',lbl:'NY Times'};
+  if(/guardian/.test(domain))  return{av:'🌍',bg:'#0d9488',col:'#2dd4bf',lbl:'Guardian'};
+  if(/apnews|ap\.org/.test(domain))return{av:'📡',bg:'#374151',col:'#94a3b8',lbl:'AP News'};
+  return{av:'📰',bg:'#374151',col:'#94a3b8',lbl:domain.replace('www.','').split('.')[0]};
+}
+
+// Renders a news item in the feed
+function renderNewsItem(item, isNew=false){
+  const s=srcStyle(item.domain||item.src||'');
+  const col=item.liveCol||s.col;
+  return`<div class="xpost${isNew?' xnew':''}" style="border-left:3px solid ${col}44;cursor:pointer" onclick="window.open('${item.url||'#'}','_blank')">
+    <div class="xpost-hdr">
+      <div class="xpost-av" style="background:${s.bg};font-size:13px">${s.av}</div>
+      <div style="flex:1;min-width:0">
+        <div class="xpost-name" style="color:${col}">${s.lbl}</div>
+        <div class="xpost-handle">${item.domain||item.src||''}</div>
+      </div>
+      ${isNew?`<span style="font-size:7px;font-weight:800;padding:1px 5px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:4px;color:#f87171;letter-spacing:.8px;animation:warnBlink .9s infinite">NEW</span>`:''}
+    </div>
+    <div class="xpost-text" style="font-size:10px;line-height:1.5">${item.title}</div>
+    <div class="xpost-meta">
+      <span class="xpost-time">${item.date}</span>
+      <span class="xpost-src" style="color:${col};background:${col}14;border-color:${col}33">↗ open</span>
+    </div>
+  </div>`;
+}
+
+// Sets feed status badge
+function setFeedStatus(live, label){
+  const el=document.getElementById('feed-status');
+  if(!el) return;
+  if(live){
+    el.style.cssText='font-size:7.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#34d399;letter-spacing:.5px;animation:warnBlink 2s infinite';
+    el.textContent='● LIVE';
+  } else {
+    el.style.cssText='font-size:7.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;letter-spacing:.5px';
+    el.textContent=label||'OFFLINE';
+  }
+}
+
+// Update timestamp
+function setFeedTs(){
+  const el=document.getElementById('xfeed-ts');
+  if(el) el.textContent=`${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')} HRS`;
+}
+
+// 1) GDELT DOC API — Real-time Global News Database, no key needed
+async function fetchGDELT(){
+  const q=encodeURIComponent('iran israel attack war nuclear 2026');
+  const url=`https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&maxrecords=12&format=json&timespan=2d&sort=DateDesc`;
+  const res=await fetch(url,{signal:AbortSignal.timeout(8000)});
+  if(!res.ok) throw new Error('GDELT '+res.status);
+  const data=await res.json();
+  if(!data.articles?.length) throw new Error('GDELT empty');
+  return data.articles
+    .filter(a=>isRelevant(a.title))
+    .slice(0,8)
+    .map(a=>({
+      title: a.title,
+      url:   a.url,
+      domain:a.domain,
+      date:  fmtDate(a.seendate?.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/,'$1-$2-$3T$4:$5:$6Z')),
+      src:   a.domain,
+      liveCol: '#34d399'
+    }));
+}
+
+// 2) RSS2JSON — Al Jazeera Middle East RSS
+async function fetchRSS(rssUrl, label){
+  const url=`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=10`;
+  const res=await fetch(url,{signal:AbortSignal.timeout(8000)});
+  if(!res.ok) throw new Error('RSS2JSON '+res.status);
+  const data=await res.json();
+  if(data.status!=='ok'||!data.items?.length) throw new Error('RSS2JSON empty');
+  return data.items
+    .filter(i=>isRelevant(i.title,i.description||''))
+    .slice(0,7)
+    .map(i=>({
+      title: i.title.trim(),
+      url:   i.link,
+      domain:label,
+      date:  fmtDate(i.pubDate),
+      src:   label,
+      liveCol:'#fbbf24'
+    }));
+}
+
+// ════════════════════════════════════════════
+// NEWS → MAP ATTACK DETECTION
+// ════════════════════════════════════════════
+
+// Analyzes a headline and returns the matching ATTACK object (or null)
+function detectAttackFromHeadline(title){
+  const t=title.toLowerCase();
+
+  // Must be a strike / military event
+  const isStrike=/attack|strike|launch|struck|fired|bomb|missile|rocket|drone|airstrike|offensive|raid|hit|destroy|kill|blast|explosion|intercept|barrage|salvo|assault|operation|angriff|rakete|drohne|luftangriff|beschuss|treffer|abgefangen|offensive|einschlag|explosion/.test(t);
+  if(!isStrike) return null;
+
+  // Determine attacker
+  let att=null;
+  if(/\biran\b|irgc|tehran|islamic republic|pasdaran|khamenei|revolutionary guard/.test(t)) att='iran';
+  else if(/\bisrael\b|idf|israeli|netanyahu|mossad|tel aviv/.test(t)) att='israel';
+  else if(/\bu\.s\.\b|\busa\b|\bus \b|american|pentagon|b-2|b2 bomber|tomahawk|uss |navy seal|centcom/.test(t)) att='usa';
+
+  // Determine target
+  let toId=null;
+  if(att==='iran'){
+    if(/tel aviv|jerusalem|haifa|israel|israeli/.test(t))               toId='telaviv';
+    else if(/bahrain|manama|fifth fleet|5th fleet/.test(t))             toId='bahrain';
+    else if(/al.?udeid|qatar/.test(t))                                  toId='udeid';
+    else if(/al.?asad|ain.?al|iraq|iraqi base/.test(t))                toId='ainasad';
+    else if(/tanf|jordan/.test(t))                                      toId='tanf';
+    else if(/gulf|saudi|uae|emirates|kuwait|oman/.test(t))              toId='udeid';
+    else                                                                toId='telaviv'; // default Iran→Israel
+  } else if(att==='israel'||att==='usa'){
+    if(/natanz/.test(t))                                                toId='natanz';
+    else if(/fordow/.test(t))                                           toId='fordow';
+    else if(/isfahan/.test(t))                                          toId='isfahan';
+    else if(/mashhad/.test(t))                                          toId='mashhad';
+    else if(/karaj/.test(t))                                            toId='karaj';
+    else if(/bandar.?abbas|hormuz/.test(t))                             toId='bandarabbas';
+    else if(/tehran|iran\b/.test(t))                                    toId='tehran';
+  }
+
+  if(!att||!toId) return null;
+
+  // Find best-matching attack from ATTACKS array
+  // Priority: same attacker + same target → newest phase first
+  const phaseOrder=['feb2026','jun2025','oct2024','apr2024'];
+  for(const phase of phaseOrder){
+    const match=ATTACKS.find(a=>a.att===att && a.to===toId && a.phase===phase);
+    if(match) return match;
+  }
+  // Fallback: attacker only
+  for(const phase of phaseOrder){
+    const match=ATTACKS.find(a=>a.att===att && a.phase===phase);
+    if(match) return match;
+  }
+  return null;
+}
+
+// Displays an attack from a real headline on the map
+function triggerNewsAttack(item, atk){
+  const now=new Date();
+  const timeStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const col=atk.color;
+  const s=srcStyle(item.domain||item.src||'');
+  const toLoc=LOC[atk.to];
+
+  // 1) Flash attack line brightly
+  const layer=LAYERS[atk.id];
+  if(layer){
+    layer.fg.setStyle({opacity:1,weight:atk.w+4});
+    layer.bg.setStyle({opacity:.28});
+    setTimeout(()=>{
+      if(LAYERS[atk.id]){
+        LAYERS[atk.id].fg.setStyle({opacity:.88,weight:atk.w});
+        LAYERS[atk.id].bg.setStyle({opacity:.06});
+      }
+    },5000);
+  }
+
+  // 2) Impact warning marker on map — news-confirmed (green, 2 min)
+  addWarnMarker(atk, timeStr, 120000, true);
+
+  // 3) Attack alert banner (with real headline as subtitle)
+  const el=document.getElementById('attack-alert');
+  el.style.cssText=`
+    display:flex;position:fixed;top:62px;left:50%;z-index:2500;
+    transform:translateX(-50%);
+    background:rgba(4,10,26,.97);
+    border:2px solid ${col}dd;border-radius:13px;
+    padding:10px 16px 10px 14px;min-width:400px;max-width:580px;
+    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    align-items:flex-start;gap:11px;
+    animation:alertIn .45s cubic-bezier(.175,.885,.32,1.275) forwards,
+              alertFlash 1.4s 0.45s infinite,
+              alertBorderGlow 1.4s 0.45s infinite;
+    box-shadow:0 0 35px ${col}66,0 8px 32px rgba(0,0,0,.75);
+  `;
+  el.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;padding-top:2px">
+      <div style="width:10px;height:10px;border-radius:50%;background:${col};animation:warnBlink .6s infinite;box-shadow:0 0 10px ${col}"></div>
+      <div style="width:10px;height:10px;border-radius:50%;border:2px solid ${col};animation:warnBlink .6s .3s infinite"></div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:8.5px;font-weight:800;letter-spacing:1.8px;color:${col};margin-bottom:3px;text-transform:uppercase;display:flex;align-items:center;gap:6px">
+        <span>⚡ CONFIRMED STRIKE · ${timeStr} HRS</span>
+        <span style="font-size:7.5px;background:${col}18;border:1px solid ${col}44;border-radius:4px;padding:1px 5px;letter-spacing:.5px">${s.lbl}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#f1f5f9;line-height:1.3;margin-bottom:4px">
+        ${ATT_NAMES[atk.att]||atk.att} <span style="color:${col}">→</span> ${toLoc?.name||atk.to}
+      </div>
+      <div style="font-size:9.5px;color:#cbd5e1;line-height:1.4;font-style:italic;border-left:2px solid ${col}55;padding-left:6px">
+        "${item.title.length>100?item.title.substring(0,100)+'…':item.title}"
+      </div>
+      <div style="font-size:8px;color:var(--sub);margin-top:4px">
+        Source: ${item.domain||item.src||'–'} · ${item.date||''}
+        ${item.url?`· <a href="${item.url}" target="_blank" style="color:var(--ship);text-decoration:none">↗ Open article</a>`:''}
+      </div>
+    </div>
+    <button onclick="clearAttackAlert()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.5);cursor:pointer;font-size:13px;flex-shrink:0;padding:3px 7px;border-radius:6px;font-family:inherit" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">✕</button>
+  `;
+  clearTimeout(window._alertTimer);
+  window._alertTimer=setTimeout(()=>clearAttackAlert(),10000);
+
+  // 4) Also highlight timeline entry
+  document.querySelectorAll('.tli').forEach(el=>{
+    el.classList.toggle('on',el.dataset.id===atk.id);
+    if(el.dataset.id===atk.id) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+}
+
+// Main load function — tries GDELT, then multiple RSS feeds
+async function loadLiveNews(manual=false){
+  if(manual){
+    const feed=document.getElementById('xfeed');
+    feed.innerHTML=`<div style="padding:18px;text-align:center;font-size:10px;color:var(--sub)"><div style="font-size:18px;margin-bottom:6px;animation:warnBounce 1s infinite">📡</div>Connecting to news sources…</div>`;
+    setFeedStatus(false,'LOADING…');
+  }
+
+  const RSS_SOURCES=[
+    ['https://www.aljazeera.com/xml/rss/all.xml',       'aljazeera.com'],
+    ['https://feeds.bbci.co.uk/news/world/middle_east/rss.xml','bbc.co.uk'],
+    ['https://feeds.reuters.com/reuters/worldNews',     'reuters.com'],
+  ];
+
+  let articles=[];
+
+  // Try GDELT first
+  try{
+    articles=await fetchGDELT();
+    console.log('✅ GDELT:',articles.length,'articles');
+  }catch(e){ console.warn('GDELT failed:',e.message); }
+
+  // Supplement with RSS if GDELT yields few results
+  if(articles.length<4){
+    for(const [rssUrl,label] of RSS_SOURCES){
+      try{
+        const rssItems=await fetchRSS(rssUrl,label);
+        // No duplicates
+        const newItems=rssItems.filter(r=>!articles.some(a=>a.title===r.title));
+        articles=[...articles,...newItems];
+        console.log('✅ RSS',label,':',rssItems.length,'articles');
+        if(articles.length>=8) break;
+      }catch(e){ console.warn('RSS',label,'failed:',e.message); }
+    }
+  }
+
+  if(articles.length>0){
+    // Sort: newest first (if possible)
+    liveNewsCache=articles.slice(0,12);
+    feedIsLive=true;
+
+    // Detect new articles for toast
+    const newCount=liveNewsCache.length-lastLiveCount;
+    const isFirst=(lastLiveCount===0);
+    lastLiveCount=liveNewsCache.length;
+
+    // Render feed
+    const feed=document.getElementById('xfeed');
+    feed.innerHTML=liveNewsCache.map((a,i)=>renderNewsItem(a,i<(isFirst?0:newCount))).join('');
+    setFeedStatus(true);
+    setFeedTs();
+
+    // Process new articles: toast + map attack if applicable
+    if(!isFirst && newCount>0){
+      const newArticles=liveNewsCache.slice(0,newCount);
+
+      // Toast for newest article
+      const newest=newArticles[0];
+      const s=srcStyle(newest.domain||'');
+      showXToast({
+        av:s.av, avBg:s.bg,
+        name:s.lbl, handle:newest.domain||'',
+        verified:false,
+        text:newest.title,
+        likes:'–',rt:'–',
+        src:'🔴 LIVE · '+s.lbl,
+        flag:/aljazeera|reuters/.test(newest.domain||'')?'iran':'israel',
+        isLive:true
+      });
+
+      // Check each new article for attack detection
+      // Stagger start so alerts don't flicker over each other
+      let attackDelay=1200;
+      newArticles.forEach(article=>{
+        const detectedAtk=detectAttackFromHeadline(article.title);
+        if(detectedAtk){
+          setTimeout(()=>triggerNewsAttack(article,detectedAtk), attackDelay);
+          attackDelay+=8000; // next attack 8s later
+        }
+      });
+    } else if(isFirst){
+      // On first load: detect attack articles quietly (no alert on startup)
+      // Set warning markers on confirmed attacks
+      let markerDelay=1500;
+      liveNewsCache.forEach(article=>{
+        const detectedAtk=detectAttackFromHeadline(article.title);
+        if(detectedAtk){
+          const now=new Date();
+          const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+          setTimeout(()=>addWarnMarker(detectedAtk,t,90000,true), markerDelay);
+          markerDelay+=600;
+        }
+      });
+    }
+  } else {
+    // Fallback: show documented statements
+    feedIsLive=false;
+    setFeedStatus(false,'OFFLINE');
+    const feed=document.getElementById('xfeed');
+    feed.innerHTML=`<div style="padding:8px 10px;font-size:9px;color:#fbbf24;background:rgba(251,191,36,.07);border-radius:5px;margin-bottom:6px;line-height:1.5">
+      ⚠ Live news services unavailable — showing documented statements (as of 21 Mar 2026)
+    </div>`+XPOSTS.map(p=>{
+      const borderCol=p.flag==='usa'?'rgba(59,130,246,.2)':p.flag==='iran'?'rgba(239,68,68,.2)':'rgba(96,165,250,.2)';
+      const col=p.flag==='usa'?'#60a5fa':p.flag==='iran'?'#f87171':'#93c5fd';
+      return`<div class="xpost" style="border-left:3px solid ${borderCol}">
+        <div class="xpost-hdr">
+          <div class="xpost-av" style="background:${p.avBg}">${p.av}</div>
+          <div style="flex:1;min-width:0">
+            <div class="xpost-name" style="color:${col}">${p.name}${p.verified?'<span class="xpost-vbadge">✓</span>':''}</div>
+            <div class="xpost-handle">${p.handle}</div>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:#f1f5f9;opacity:.7">𝕏</div>
+        </div>
+        <div class="xpost-text">${p.text}</div>
+        <div class="xpost-meta">
+          <div class="xpost-actions"><span class="xpost-act">♡ ${p.likes}</span><span class="xpost-act">↺ ${p.rt}</span></div>
+          <span class="xpost-src">${p.src}</span>
+        </div>
+        <div class="xpost-time">${p.time}</div>
+      </div>`;
+    }).join('');
+    setFeedTs();
+  }
+}
+
+// xRefresh — now as alias for manual reload
+function xRefresh(){ loadLiveNews(true); }
+
+// Load initially as soon as page is ready
+loadLiveNews(false);
+// Auto-refresh every 4 minutes
+setInterval(()=>loadLiveNews(false), 4*60*1000);
+
+// ════════════════════════════════════════════
+// LIVE SIMULATION ENGINE
+// ════════════════════════════════════════════
+
+// Realistic attack times (local time at origin)
+const ATK_TIMES={
+  a0:'06:45', a1:'01:12', a2:'14:30',
+  b1:'19:05', b2:'22:18',
+  c1:'04:30', c2:'22:45', c3:'03:14', c4:'06:22',
+  d1:'02:31', d2:'03:00', d3:'21:17', d4:'04:44'
+};
+
+// ── Warning markers at impact sites — with auto-expiry ──
+const WARN_LAYERS={};
+const WARN_TIMERS={};
+
+// Remove marker with fade-out
+function removeWarnMarker(id, fade=true){
+  if(!WARN_LAYERS[id]) return;
+  const layers=WARN_LAYERS[id];
+  if(fade){
+    layers.forEach(l=>{
+      const el=l.getElement();
+      if(el){ el.style.transition='opacity 1.2s ease'; el.style.opacity='0'; }
+    });
+    setTimeout(()=>{
+      layers.forEach(l=>{ try{ if(map.hasLayer(l)) map.removeLayer(l); }catch(e){} });
+      delete WARN_LAYERS[id];
+    },1200);
+  } else {
+    layers.forEach(l=>{ try{ if(map.hasLayer(l)) map.removeLayer(l); }catch(e){} });
+    delete WARN_LAYERS[id];
+  }
+  if(WARN_TIMERS[id]){ clearTimeout(WARN_TIMERS[id]); delete WARN_TIMERS[id]; }
+}
+
+// duration: ms until expiry | confirmed: true=news-confirmed (green), false=simulated (red)
+function addWarnMarker(atk, timeOverride, duration, confirmed=false){
+  const to=LOC[atk.to]; if(!to) return;
+  removeWarnMarker(atk.id, false); // remove old immediately
+
+  const col   = confirmed ? '#34d399' : atk.color;
+  const glow  = confirmed ? 'rgba(52,211,153,.7)' : `${atk.color}aa`;
+  const label = confirmed ? '✅ CONFIRMED' : '⚠ IMPACT';
+  const pulse = confirmed ? 'none' : 'warnPulse 1.6s infinite';
+  const t     = timeOverride||ATK_TIMES[atk.id]||'';
+  const dur   = duration||(confirmed ? 120000 : 30000);
+
+  // Ring 1
+  const ring1=L.marker([to.lat,to.lng],{
+    icon:L.divIcon({className:'',
+      html:`<div style="position:absolute;top:50%;left:50%;width:40px;height:40px;border-radius:50%;border:2.5px solid ${col};animation:warnRing 1.6s ease-out infinite;pointer-events:none"></div>`,
+      iconSize:[0,0],iconAnchor:[0,0]}),
+    interactive:false,zIndexOffset:1800
+  }).addTo(map);
+  // Ring 2 (offset)
+  const ring2=L.marker([to.lat,to.lng],{
+    icon:L.divIcon({className:'',
+      html:`<div style="position:absolute;top:50%;left:50%;width:40px;height:40px;border-radius:50%;border:2.5px solid ${col};animation:warnRing 1.6s ease-out .55s infinite;pointer-events:none"></div>`,
+      iconSize:[0,0],iconAnchor:[0,0]}),
+    interactive:false,zIndexOffset:1800
+  }).addTo(map);
+  // Badge
+  const badge=L.marker([to.lat,to.lng],{
+    icon:L.divIcon({className:'',
+      html:`<div style="
+        background:linear-gradient(135deg,${col}ee,${col}99);
+        border:2px solid rgba(255,255,255,.85);border-radius:20px;
+        padding:4px 9px 4px 7px;
+        font-family:'Inter',sans-serif;font-size:10px;font-weight:800;color:#fff;
+        white-space:nowrap;pointer-events:none;
+        box-shadow:0 0 22px ${glow},0 3px 12px rgba(0,0,0,.55);
+        animation:${pulse}${confirmed?'':',warnBounce 2s ease-in-out infinite'};
+        display:flex;align-items:center;gap:4px;
+        text-shadow:0 1px 3px rgba(0,0,0,.4);
+      ">
+        <span style="${confirmed?'':'animation:warnBlink .7s infinite;'}font-size:11px">${confirmed?'✅':'⚠'}</span>
+        <span>${label}${t?' · '+t+' UHR':''}</span>
+      </div>`,
+      iconSize:[180,28],iconAnchor:[90,14]}),
+    interactive:false,zIndexOffset:2000
+  }).addTo(map);
+
+  WARN_LAYERS[atk.id]=[ring1,ring2,badge];
+  // Auto-Ablauf mit Fade
+  WARN_TIMERS[atk.id]=setTimeout(()=>removeWarnMarker(atk.id,true), dur);
+}
+
+// ATT_NAMES wird von triggerNewsAttack genutzt
+const ATT_NAMES={iran:'🇮🇷 IRAN',israel:'🇮🇱 ISRAEL',usa:'🇺🇸 USA'};
+function clearAttackAlert(){
+  const el=document.getElementById('attack-alert');
+  el.style.animation='alertOut .35s ease forwards';
+  setTimeout(()=>{ el.style.display='none'; el.style.cssText='display:none'; },350);
+}
+
+// ── X Breaking News Toast ──
+const TOAST_COLORS={usa:'#3b82f6',iran:'#ef4444',israel:'#60a5fa'};
+function showXToast(post){
+  const toast=document.getElementById('x-toast');
+  const col=TOAST_COLORS[post.flag]||'#f1f5f9';
+  const glowAnim=post.flag==='iran'?'toastGlowRed':'toastGlowBlue';
+  toast.style.cssText=`
+    display:block;position:fixed;top:62px;left:50%;z-index:3000;
+    transform:translateX(-50%);
+    background:rgba(4,10,26,.98);
+    border:2px solid ${col}bb;border-radius:14px;
+    padding:13px 16px;min-width:430px;max-width:580px;
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    animation:toastIn .45s cubic-bezier(.175,.885,.32,1.275) forwards, ${glowAnim} 1.8s 0.45s infinite;
+  `;
+  const shortText=post.text.length>170?post.text.substring(0,170)+'…':post.text;
+  toast.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:11px">
+      <div style="width:36px;height:36px;border-radius:50%;background:${post.avBg};
+            display:flex;align-items:center;justify-content:center;font-size:17px;
+            flex-shrink:0;border:2px solid ${col}55;
+            box-shadow:0 0 14px ${col}44,0 3px 8px rgba(0,0,0,.4)">${post.av}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
+          <span style="font-size:11.5px;font-weight:800;color:#f1f5f9">${post.name}</span>
+          ${post.verified?`<span style="color:#1d9bf0;font-size:11px">✓</span>`:''}
+          <span style="font-size:9px;color:var(--sub)">${post.handle}</span>
+          <span class="toast-breaking" style="margin-left:auto">⚡ BREAKING</span>
+        </div>
+        <div style="font-size:11px;color:#e2e8f0;line-height:1.55;margin-bottom:7px">${shortText}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;color:var(--sub)">♡ ${post.likes} &nbsp;↺ ${post.rt}</span>
+          <span style="font-size:8.5px;color:${col};background:${col}14;border:1px solid ${col}33;border-radius:4px;padding:1px 7px">${post.src}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">
+        <div style="font-size:17px;font-weight:900;color:#f1f5f9;opacity:.85;line-height:1">𝕏</div>
+        <button onclick="clearXToast()" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);cursor:pointer;font-size:11px;padding:2px 6px;border-radius:5px;font-family:inherit" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">✕</button>
+      </div>
+    </div>
+  `;
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>clearXToast(),6500);
+}
+function clearXToast(){
+  const toast=document.getElementById('x-toast');
+  toast.style.animation='toastOut .35s ease forwards';
+  setTimeout(()=>{ toast.style.display='none'; toast.style.cssText='display:none'; },350);
+}
+
+// ── Live X Tick — shows only real articles as toast ──
+let liveXIdx=0;
+function liveXTick(){
+  if(feedIsLive && liveNewsCache.length>0){
+    const item=liveNewsCache[liveXIdx%liveNewsCache.length];
+    liveXIdx++;
+    const s=srcStyle(item.domain||'');
+    showXToast({
+      av:s.av, avBg:s.bg,
+      name:s.lbl, handle:item.domain||'',
+      verified:false,
+      text:item.title,
+      likes:'–', rt:'–',
+      src:'🔴 LIVE · '+s.lbl,
+      flag:/aljazeera|reuters|ap\.org/.test(item.domain||'')?'iran':'israel',
+      isLive:true
+    });
+  }
+  // No fallback to simulated posts — real news only
+}
+
+// ── Startup: real news feed only, no simulation ticker ──
+// X Toast after 12s (gives news engine time to load)
+setTimeout(()=>liveXTick(), 12000);
+// Next toast every 35 seconds
+setInterval(()=>liveXTick(), 35000);
+
+// ════════════════════════════════════════════
+// ANIMATION
+// ════════════════════════════════════════════
+async function runAnimation(){
+  const btn=document.getElementById('animBtn');
+  btn.disabled=true;btn.textContent='⏳ Animating…';
+  const activePhase=document.querySelector('.pbtn.on')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1]||'all';
+  const list=activePhase==='all'?ATTACKS:ATTACKS.filter(a=>a.phase===activePhase);
+  for(const atk of list){
+    Object.entries(LAYERS).forEach(([id,l])=>{
+      const a=ATTACKS.find(x=>x.id===id);
+      if(!a)return;
+      l.fg.setStyle({opacity:id===atk.id?1:0.07,weight:id===atk.id?a.w+2:a.w});
+      l.bg.setStyle({opacity:id===atk.id?.12:.01});
+    });
+    document.querySelectorAll('.tli').forEach(el=>{
+      el.classList.toggle('on',el.dataset.id===atk.id);
+      if(el.dataset.id===atk.id)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    });
+    showDetail(atk);
+    await new Promise(r=>setTimeout(r,2000));
+  }
+  Object.entries(LAYERS).forEach(([id,l])=>{
+    const a=ATTACKS.find(x=>x.id===id);
+    if(a){l.fg.setStyle({opacity:.88,weight:a.w});l.bg.setStyle({opacity:.06});if(l.flagStart){const el=l.flagStart.getElement();if(el)el.style.opacity='1';}if(l.flagMid){const el=l.flagMid.getElement();if(el)el.style.opacity='1';}}
+  });
+  btn.disabled=false;btn.innerHTML='▶ Animate Attacks';
+}
+</script>
+</body>
+</html>
