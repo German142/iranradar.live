@@ -1874,18 +1874,36 @@ function setLang(l,btn){
 function shareMap(){
   const url=window.location.href;
   const toast=document.getElementById('share-toast');
-  const t=LANGS[currentLang]||LANGS.en;
-  const copy=()=>{toast.textContent='🔗 '+t.share+' ✓';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);};
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(copy).catch(()=>{fallbackCopy(url);copy();});
-  } else { fallbackCopy(url); copy(); }
+  const showToast=(msg)=>{toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);};
+
+  // 1) Web Share API (native mobile share sheet)
+  if(navigator.share){
+    navigator.share({title:'Iran Radar – Live Conflict Map',url:url}).catch(()=>{});
+    showToast('🔗 Geteilt ✓');
+    return;
+  }
+  // 2) Clipboard API (HTTPS only)
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(url)
+      .then(()=>showToast('🔗 Link kopiert ✓'))
+      .catch(()=>legacyCopy(url,showToast));
+    return;
+  }
+  // 3) Legacy execCommand fallback
+  legacyCopy(url,showToast);
 }
-function fallbackCopy(text){
-  const ta=document.createElement('textarea');
-  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
-  document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');}catch(e){}
-  document.body.removeChild(ta);
+function legacyCopy(text,showToast){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    ta.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    if(ok){showToast('🔗 Link kopiert ✓');return;}
+  }catch(e){}
+  // 4) Last resort: prompt dialog so user can copy manually
+  window.prompt('Link kopieren (Strg+C / Cmd+C):', text);
 }
 
 // ════════════════════════════════════════════
