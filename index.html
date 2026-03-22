@@ -552,6 +552,15 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 }
 .tg-btn:hover{background:rgba(0,136,204,.22);color:#7dd3fc;border-color:rgba(0,136,204,.5)}
 
+/* ── NOTIFICATION BUTTON ── */
+#notif-btn{
+  display:flex;align-items:center;gap:5px;padding:4px 11px;
+  background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);
+  border-radius:6px;color:#fbbf24;font-size:9.5px;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.3px;
+}
+#notif-btn:hover{filter:brightness(1.2)}
+
 /* ── LAST UPDATED BADGE ── */
 .last-updated{
   font-size:9px;color:#64748b;display:flex;align-items:center;gap:4px;
@@ -695,8 +704,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       </button>
       <!-- Telegram -->
       <a class="tg-btn" href="https://t.me/iranradar_live" target="_blank" rel="noopener" title="Telegram Alerts">
-        <span>✈️</span><span class="tg-btn-txt">Alerts</span>
+        <span>✈️</span><span class="tg-btn-txt">Telegram</span>
       </a>
+      <!-- Notification Bell -->
+      <button id="notif-btn" onclick="toggleNotifications()" title="Enable browser notifications for new strikes">
+        🔔 <span class="notif-btn-txt">Notify me</span>
+      </button>
       <!-- About -->
       <button class="share-btn" onclick="openAboutModal()" title="About & Sources" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);color:#60a5fa">
         <span>ℹ️</span><span class="about-btn-txt">About</span>
@@ -1716,25 +1729,67 @@ async function fetchGDELT(query, timespan='7d'){
     }));
 }
 
-// RSS via rss2json.com (free, no key needed for public feeds)
-async function fetchRSS(rssUrl){
-  const url=`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
-  const res=await fetch(url,{signal:AbortSignal.timeout(10000)});
-  if(!res.ok) throw new Error('RSS '+res.status);
-  const data=await res.json();
-  if(data.status!=='ok'||!data.items?.length) throw new Error('RSS empty');
+// ── RSS XML Parser (DOMParser — no external service needed) ──
+function parseRSSXML(xml, rssUrl){
   let host='';
   try{host=new URL(rssUrl).hostname.replace('www.','');}catch{}
-  return data.items
-    .filter(a=>isRelevant(a.title||'',a.description||''))
-    .map(a=>({
-      title:  a.title,
-      url:    a.link,
-      domain: host,
-      date:   fmtDate(a.pubDate),
-      src:    data.feed?.title||host,
-      liveCol:'#34d399'
+  const doc=new DOMParser().parseFromString(xml,'text/xml');
+  // RSS 2.0
+  let items=[...doc.querySelectorAll('item')];
+  if(items.length){
+    return items
+      .filter(el=>isRelevant(el.querySelector('title')?.textContent||'',el.querySelector('description')?.textContent||''))
+      .map(el=>({
+        title: (el.querySelector('title')?.textContent||'').trim(),
+        url:   el.querySelector('link')?.textContent||el.querySelector('guid')?.textContent||'',
+        domain:host, date:fmtDate(el.querySelector('pubDate')?.textContent||''),
+        src:host, liveCol:'#34d399'
+      }));
+  }
+  // Atom
+  let entries=[...doc.querySelectorAll('entry')];
+  return entries
+    .filter(el=>isRelevant(el.querySelector('title')?.textContent||'',el.querySelector('summary,content')?.textContent||''))
+    .map(el=>({
+      title: (el.querySelector('title')?.textContent||'').trim(),
+      url:   el.querySelector('link')?.getAttribute('href')||el.querySelector('link')?.textContent||'',
+      domain:host, date:fmtDate(el.querySelector('published,updated')?.textContent||''),
+      src:host, liveCol:'#34d399'
     }));
+}
+
+// RSS — tries 3 CORS proxies in sequence, falls back to rss2json as last resort
+async function fetchRSS(rssUrl){
+  const proxies=[
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`
+  ];
+  for(const proxyUrl of proxies){
+    try{
+      const res=await fetch(proxyUrl,{signal:AbortSignal.timeout(10000)});
+      if(!res.ok) continue;
+      const text=await res.text();
+      if(!text||text.length<100) continue;
+      const items=parseRSSXML(text,rssUrl);
+      if(items.length>0){
+        console.log('✅ RSS via proxy',new URL(proxyUrl).hostname,':',items.length,'articles');
+        return items;
+      }
+    }catch(e){ console.warn('⚠ RSS proxy failed:',e.message); }
+  }
+  // Final fallback: rss2json.com
+  try{
+    const url=`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=20`;
+    const res=await fetch(url,{signal:AbortSignal.timeout(8000)});
+    if(!res.ok) throw new Error('rss2json '+res.status);
+    const data=await res.json();
+    if(data.status!=='ok'||!data.items?.length) throw new Error('rss2json empty');
+    let host='';try{host=new URL(rssUrl).hostname.replace('www.','');}catch{}
+    return data.items
+      .filter(a=>isRelevant(a.title||'',a.description||''))
+      .map(a=>({title:a.title,url:a.link,domain:host,date:fmtDate(a.pubDate),src:data.feed?.title||host,liveCol:'#34d399'}));
+  }catch(e){ throw new Error('RSS all proxies failed: '+rssUrl); }
 }
 
 // ════════════════════════════════════════════
@@ -1956,6 +2011,8 @@ async function loadLiveNews(manual=false){
     if(!isFirst && newCount>0){
       const newArticles=liveNewsCache.slice(0,newCount);
       const newest=newArticles[0];
+      // ── Browser Notification for new articles ──
+      notifyNewArticle(newest);
       const s=srcStyle(newest.domain||'');
       showXToast({
         av:s.av, avBg:s.bg,
@@ -2719,6 +2776,135 @@ function closeAboutModal() {
   const now = new Date();
   el.textContent = now.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
 })();
+
+// ════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ════════════════════════════════════════════
+let notificationsEnabled = false;
+
+function updateNotifBtn(){
+  const btn = document.getElementById('notif-btn');
+  if(!btn) return;
+  if(!('Notification' in window)){
+    btn.style.display='none'; return;
+  }
+  if(Notification.permission==='granted'){
+    btn.innerHTML='🔔 <span class="notif-btn-txt">Alerts ON</span>';
+    btn.style.background='rgba(52,211,153,.14)';
+    btn.style.borderColor='rgba(52,211,153,.35)';
+    btn.style.color='#34d399';
+    notificationsEnabled=true;
+  } else if(Notification.permission==='denied'){
+    btn.innerHTML='🔕 <span class="notif-btn-txt">Blocked</span>';
+    btn.style.opacity='0.5';
+    btn.title='Notifications are blocked. Please enable them in your browser settings.';
+  } else {
+    btn.innerHTML='🔔 <span class="notif-btn-txt">Notify me</span>';
+    btn.style.background='rgba(251,191,36,.1)';
+    btn.style.borderColor='rgba(251,191,36,.3)';
+    btn.style.color='#fbbf24';
+  }
+}
+
+async function toggleNotifications(){
+  if(!('Notification' in window)){
+    alert('Your browser does not support notifications.'); return;
+  }
+  if(Notification.permission==='denied'){
+    alert('Notifications are blocked by your browser.\n\nTo enable:\n1. Click the 🔒 lock icon in your address bar\n2. Set Notifications to "Allow"\n3. Reload the page');
+    return;
+  }
+  if(Notification.permission==='granted'){
+    notificationsEnabled=!notificationsEnabled;
+    const btn=document.getElementById('notif-btn');
+    if(!notificationsEnabled){
+      if(btn){btn.innerHTML='🔔 <span class="notif-btn-txt">Notify me</span>';btn.style.background='rgba(251,191,36,.1)';btn.style.borderColor='rgba(251,191,36,.3)';btn.style.color='#fbbf24';}
+    } else {
+      updateNotifBtn();
+      sendStrikeNotification('🔔 Iran Radar Alerts ON','You will be notified when new strikes are detected.',null);
+    }
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  notificationsEnabled = perm==='granted';
+  updateNotifBtn();
+  if(perm==='granted'){
+    sendStrikeNotification('🔔 Iran Radar Alerts activated!','You will be notified of new strikes and attacks.',null);
+  }
+}
+
+function sendStrikeNotification(title, body, url){
+  if(!notificationsEnabled || Notification.permission!=='granted') return;
+  try{
+    const n = new Notification(title, {
+      body: body,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%230a0f1e" stroke="%23f87171" stroke-width="5"/><circle cx="50" cy="50" r="8" fill="%23f87171"/><circle cx="50" cy="50" r="22" fill="none" stroke="%23f87171" stroke-width="2" opacity="0.5"/></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23f87171"/></svg>',
+      tag: 'iranradar-strike',
+      requireInteraction: true,
+      vibrate: [200,100,200]
+    });
+    n.onclick = function(){
+      window.focus();
+      if(url) window.open(url,'_blank');
+      n.close();
+    };
+  }catch(e){ console.warn('Notification failed:',e); }
+}
+
+// Hook into existing news detection — send notification for new strikes
+const _origTriggerNewsAttack = typeof triggerNewsAttack === 'function' ? triggerNewsAttack : null;
+function triggerNewsAttackWithNotif(article, atk){
+  if(_origTriggerNewsAttack) _origTriggerNewsAttack(article, atk);
+  const attacker = atk?.attacker||'Unknown';
+  const flag = attacker==='iran'?'🇮🇷':attacker==='israel'?'🇮🇱':'🇺🇸';
+  sendStrikeNotification(
+    `🚨 ${flag} New Strike Detected — Iran Radar`,
+    article.title,
+    article.url
+  );
+}
+// Override triggerNewsAttack
+if(typeof triggerNewsAttack !== 'undefined'){
+  const orig = triggerNewsAttack;
+  triggerNewsAttack = function(article, atk){
+    orig(article, atk);
+    const attacker = atk?.attacker||'';
+    const flag = attacker==='iran'?'🇮🇷':attacker==='israel'?'🇮🇱':'🇺🇸';
+    sendStrikeNotification(
+      `🚨 ${flag} New Strike Detected — Iran Radar`,
+      article.title,
+      article.url
+    );
+  };
+}
+
+// Also notify on new live news articles (non-strike)
+function notifyNewArticle(article){
+  sendStrikeNotification(
+    '📰 New Report — Iran Radar',
+    article.title,
+    article.url
+  );
+}
+
+// Init on page load
+document.addEventListener('DOMContentLoaded', function(){
+  updateNotifBtn();
+  // Auto-prompt after 30 seconds if not yet decided
+  if(Notification.permission==='default'){
+    setTimeout(()=>{
+      const toast = document.getElementById('share-toast');
+      if(toast){
+        toast.textContent = '🔔 Enable alerts for new strikes!';
+        toast.style.cursor='pointer';
+        toast.onclick = ()=>{ toggleNotifications(); toast.classList.remove('show'); };
+        toast.classList.add('show');
+        setTimeout(()=>{ toast.classList.remove('show'); toast.onclick=null; toast.style.cursor=''; }, 6000);
+      }
+    }, 30000);
+  }
+});
 
 </script>
 <div id="share-toast">🔗 Link kopiert!</div>
