@@ -523,6 +523,15 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
         <button class="hls-mute-btn" id="hls-mute" onclick="hlsToggleMute()">🔇 Ton</button>
       </div>
     </div>
+
+    <!-- ══ REGIONAL CLOCKS ══ -->
+    <div class="sec" style="padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px" id="ttl-clocks">🕐 REGIONAL TIME</span>
+      </div>
+      <div id="clock-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px"></div>
+    </div>
+
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
     <div class="tl" id="tl"></div>
   </div>
@@ -563,7 +572,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       <div class="sec-ttl" id="ttl-weapons">Total Weapons Used</div>
       <div id="wbars"></div>
     </div>
-    <button class="btn-anim" id="animBtn" onclick="runAnimation()">▶ Animate Attacks</button>
     <div class="sec" style="padding-bottom:4px">
       <div class="sec-ttl" id="ttl-fleet">US Fleet Deployed</div>
       <div id="ship-list"></div>
@@ -791,8 +799,8 @@ const SHIPS_DATA=[
 window.addEventListener('resize',()=>map.invalidateSize());
 
 const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
-L.control.attribution({position:'bottomright',prefix:'© OpenStreetMap / CARTO'}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:13,attribution:'© ESRI Ocean Basemap'}).addTo(map);
+L.control.attribution({position:'bottomright',prefix:'© ESRI Ocean Basemap'}).addTo(map);
 setTimeout(()=>map.invalidateSize(),150);
 setTimeout(()=>map.invalidateSize(),500);
 
@@ -814,9 +822,9 @@ function shipSVG(type){
       <!-- Hull shadow -->
       <ellipse cx="38" cy="16" rx="34" ry="5" fill="rgba(0,0,0,.35)"/>
       <!-- Main flight deck -->
-      <polygon points="10,6 66,5 71,14 66,23 10,22" fill="#1e3a8a"/>
+      <polygon points="10,6 66,5 71,14 66,23 10,22" fill="#374151"/>
       <!-- Deck surface -->
-      <polygon points="11,7 64,6 69,14 64,21 11,21" fill="#1d4ed8"/>
+      <polygon points="11,7 64,6 69,14 64,21 11,21" fill="#4b5563"/>
       <!-- Angled landing strip (port side) -->
       <line x1="20" y1="21" x2="56" y2="8"  stroke="#93c5fd" stroke-width="1.8" opacity=".8"/>
       <!-- Center axial line -->
@@ -824,16 +832,16 @@ function shipSVG(type){
       <!-- Deck markings - landing zone -->
       <rect x="52" y="10" width="10" height="8" rx="1" fill="none" stroke="#60a5fa" stroke-width=".8" opacity=".6"/>
       <!-- Island / superstructure (starboard) -->
-      <rect x="44" y="5"  width="13" height="9" rx="1.5" fill="#0c4a6e"/>
-      <rect x="45" y="3"  width="4"  height="4" rx=".5"  fill="#0369a1"/>
-      <rect x="50" y="3"  width="2"  height="3" rx=".5"  fill="#0369a1"/>
+      <rect x="44" y="5"  width="13" height="9" rx="1.5" fill="#1f2937"/>
+      <rect x="45" y="3"  width="4"  height="4" rx=".5"  fill="#374151"/>
+      <rect x="50" y="3"  width="2"  height="3" rx=".5"  fill="#374151"/>
       <!-- Mast -->
       <line x1="47" y1="1" x2="47" y2="4" stroke="#7dd3fc" stroke-width="1.2"/>
       <line x1="44" y1="2" x2="50" y2="2" stroke="#7dd3fc" stroke-width=".8"/>
       <!-- Bow -->
-      <polygon points="64,6 72,14 64,22" fill="#1e3a8a"/>
+      <polygon points="64,6 72,14 64,22" fill="#374151"/>
       <!-- Stern -->
-      <polygon points="11,7 5,14 11,21" fill="#1e3a8a"/>
+      <polygon points="11,7 5,14 11,21" fill="#374151"/>
       <!-- Catapult lines -->
       <line x1="14" y1="10" x2="40" y2="9"  stroke="#60a5fa" stroke-width=".8" opacity=".5"/>
       <line x1="14" y1="14" x2="40" y2="13" stroke="#60a5fa" stroke-width=".8" opacity=".5"/>
@@ -847,27 +855,27 @@ function shipSVG(type){
       <!-- Hull shadow -->
       <ellipse cx="25" cy="10" rx="22" ry="3.5" fill="rgba(0,0,0,.3)"/>
       <!-- Hull -->
-      <polygon points="8,4 40,3 47,8 40,13 8,12" fill="#0c4a6e"/>
+      <polygon points="8,4 40,3 47,8 40,13 8,12" fill="#1f2937"/>
       <!-- Deck surface -->
-      <polygon points="9,5 39,4 45,8 39,12 9,11" fill="#0369a1"/>
+      <polygon points="9,5 39,4 45,8 39,12 9,11" fill="#374151"/>
       <!-- Superstructure fore -->
-      <rect x="16" y="5" width="9" height="6" rx="1" fill="#0e7490"/>
+      <rect x="16" y="5" width="9" height="6" rx="1" fill="#4b5563"/>
       <!-- Superstructure aft -->
-      <rect x="28" y="5" width="7" height="5" rx="1" fill="#155e75"/>
+      <rect x="28" y="5" width="7" height="5" rx="1" fill="#374151"/>
       <!-- Mast (fore) -->
       <line x1="21" y1="2" x2="21" y2="5" stroke="#7dd3fc" stroke-width="1.2"/>
       <line x1="18" y1="3" x2="24" y2="3" stroke="#7dd3fc" stroke-width=".8"/>
       <!-- Mast (aft) -->
       <line x1="32" y1="3" x2="32" y2="5" stroke="#7dd3fc" stroke-width=".9"/>
       <!-- Gun turret fore -->
-      <circle cx="13" cy="8" r="2" fill="#164e63"/>
+      <circle cx="13" cy="8" r="2" fill="#1f2937"/>
       <line x1="13" y1="6" x2="13" y2="3" stroke="#0891b2" stroke-width="1"/>
       <!-- VLS cells -->
       <rect x="10" y="6" width="5" height="4" rx=".5" fill="none" stroke="#22d3ee" stroke-width=".7" opacity=".7"/>
       <!-- Bow -->
-      <polygon points="39,4 46,8 39,12" fill="#0c4a6e"/>
+      <polygon points="39,4 46,8 39,12" fill="#1f2937"/>
       <!-- Stern -->
-      <polygon points="9,5 4,8 9,11" fill="#0c4a6e"/>
+      <polygon points="9,5 4,8 9,11" fill="#1f2937"/>
     </svg>`;
   }
 }
@@ -947,6 +955,27 @@ function placeMarkers(){
   });
 }
 placeMarkers();
+
+// ══ SEA LABELS ══
+const seaNames=[
+  {lat:27.0, lng:51.5,  name:'Persian Gulf',      nameAr:'الخليج العربي'},
+  {lat:20.0, lng:38.5,  name:'Red Sea',            nameAr:'البحر الأحمر'},
+  {lat:36.0, lng:18.0,  name:'Mediterranean Sea',  nameAr:'البحر الأبيض المتوسط'},
+  {lat:22.5, lng:62.0,  name:'Arabian Sea',        nameAr:'بحر العرب'},
+  {lat:41.5, lng:51.0,  name:'Caspian Sea',        nameAr:'بحر قزوين'},
+  {lat:12.5, lng:49.0,  name:'Gulf of Aden',       nameAr:'خليج عدن'},
+  {lat:29.5, lng:34.5,  name:'Gulf of Aqaba',      nameAr:'خليج العقبة'},
+];
+seaNames.forEach(s=>{
+  L.marker([s.lat,s.lng],{
+    icon:L.divIcon({
+      className:'',
+      html:`<div style="font-size:9px;font-weight:700;color:rgba(180,220,255,.65);letter-spacing:1.2px;text-transform:uppercase;pointer-events:none;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.8)">${s.name}</div>`,
+      iconAnchor:[40,8]
+    }),
+    interactive:false,zIndexOffset:-1000
+  }).addTo(map);
+});
 
 // ════════════════════════════════════════════
 // BEZIER + FLOW LINES
@@ -2145,6 +2174,39 @@ function hlsToggleMute() {
 }
 
 document.addEventListener('DOMContentLoaded', hlsStart);
+
+
+// ════════════════════════════════════════════
+// REGIONAL CLOCKS
+// ════════════════════════════════════════════
+const CLOCK_ZONES=[
+  {city:'Tehran',     cityDe:'Teheran',  cityAr:'طهران',  cityFa:'تهران',   cityHe:'טהרן',   tz:'Asia/Tehran',         flag:'🇮🇷'},
+  {city:'Tel Aviv',   cityDe:'Tel Aviv', cityAr:'تل أبيب',cityFa:'تل آویو', cityHe:'תל אביב',tz:'Asia/Jerusalem',      flag:'🇮🇱'},
+  {city:'Washington', cityDe:'Washington',cityAr:'واشنطن',cityFa:'واشینگتن',cityHe:'וושינגטון',tz:'America/New_York',  flag:'🇺🇸'},
+  {city:'Riyadh',     cityDe:'Riad',     cityAr:'الرياض', cityFa:'ریاض',    cityHe:'ריאד',    tz:'Asia/Riyadh',         flag:'🇸🇦'},
+  {city:'Moscow',     cityDe:'Moskau',   cityAr:'موسكو',  cityFa:'مسکو',    cityHe:'מוסקבה',  tz:'Europe/Moscow',       flag:'🇷🇺'},
+  {city:'Beijing',    cityDe:'Peking',   cityAr:'بكين',   cityFa:'پکن',     cityHe:'בייג'ינג',tz:'Asia/Shanghai',      flag:'🇨🇳'},
+];
+function getCityName(z){
+  const l=currentLang||'en';
+  return l==='de'?z.cityDe:l==='ar'?z.cityAr:l==='fa'?z.cityFa:l==='he'?z.cityHe:z.city;
+}
+function updateClocks(){
+  const grid=document.getElementById('clock-grid');
+  if(!grid) return;
+  const now=new Date();
+  grid.innerHTML=CLOCK_ZONES.map(z=>{
+    const t=now.toLocaleTimeString('en-GB',{timeZone:z.tz,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const d=now.toLocaleDateString('en-GB',{timeZone:z.tz,weekday:'short',day:'2-digit',month:'short'});
+    return `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:6px 8px">
+      <div style="font-size:10px;margin-bottom:1px">${z.flag} <span style="font-size:8.5px;font-weight:600;color:#cbd5e1">${getCityName(z)}</span></div>
+      <div style="font-size:13px;font-weight:800;color:#f1f5f9;letter-spacing:.5px;font-variant-numeric:tabular-nums">${t}</div>
+      <div style="font-size:7.5px;color:rgba(255,255,255,.3)">${d}</div>
+    </div>`;
+  }).join('');
+}
+updateClocks();
+setInterval(updateClocks, 1000);
 
 // ════════════════════════════════════════════
 // MOBILE NAVIGATION
