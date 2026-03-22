@@ -506,13 +506,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
         </div>
         <div style="display:flex;gap:4px" id="yt-sw">
           <button class="yt-ch-btn active" onclick="switchYT('dw',this)" title="DW News">DW</button>
-          <button class="yt-ch-btn" onclick="switchYT('sky',this)" title="Sky News">SKY</button>
-          <button class="yt-ch-btn" onclick="switchYT('ara',this)" title="Al Arabiya عربي">عربية</button>
+          <button class="yt-ch-btn" onclick="switchYT('f24',this)" title="France 24 English">F24</button>
+          <button class="yt-ch-btn" onclick="switchYT('aja',this)" title="Al Jazeera Arabic">الجزيرة</button>
         </div>
       </div>
       <div class="yt-wrap">
         <iframe id="yt-frame"
-          src="https://www.youtube.com/embed/mPV2oJQbSqQ?autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1"
+          src="https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg&autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen frameborder="0"></iframe>
         <!-- Unmute overlay — verschwindet nach Klick -->
@@ -2091,10 +2091,11 @@ renderCasChart();
 // ════════════════════════════════════════════
 // YOUTUBE CHANNEL SWITCHER
 // ════════════════════════════════════════════
+// channel= Methode: stabiler als Video-IDs, nutzt den aktiven Live-Stream des Kanals
 const YT_CHANNELS={
-  dw: {id:'mPV2oJQbSqQ', label:'DW News · Live 24/7 🔇 Ton per Klick'},
-  sky:{id:'9Auq9mYxFEE', label:'Sky News · Live 24/7 🔇 Ton per Klick'},
-  ara:{id:'WF0pKPJQKfk', label:'العربية · Al Arabiya · بث مباشر 🔇'}
+  dw: {ch:'UCknLrEdhRCp1aegoMqRaCZg', label:'DW News · Live 24/7 — stumm gestartet'},
+  f24:{ch:'UCQfwfsi5VrQ8yKL-UpRNNOA', label:'France 24 English · Live — stumm gestartet'},
+  aja:{ch:'UCNye-wNBqNL5ZzHSJdpkiXA', label:'Al Jazeera Arabic · بث مباشر — stumm gestartet'}
 };
 function switchYT(ch, btn){
   const frame=document.getElementById('yt-frame');
@@ -2102,7 +2103,7 @@ function switchYT(ch, btn){
   const unmute=document.getElementById('yt-unmute');
   if(!frame) return;
   const c=YT_CHANNELS[ch];
-  frame.src=`https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`;
+  frame.src=`https://www.youtube.com/embed/live_stream?channel=${c.ch}&autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1`;
   if(label) label.textContent=c.label+' — stumm gestartet';
   if(unmute){ unmute.classList.remove('hidden'); document.getElementById('yt-unmute-icon').textContent='🔇'; document.getElementById('yt-unmute-txt').textContent='Ton einschalten'; }
   document.querySelectorAll('.yt-ch-btn').forEach(b=>b.classList.remove('active'));
