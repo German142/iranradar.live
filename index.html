@@ -502,47 +502,25 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       </div>
     </div>
 
-    <!-- ══ LIVE TV (HLS Player + Link Fallback) ══ -->
+    <!-- ══ DW NEWS LIVE ══ -->
     <div class="sec" style="padding-bottom:12px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:9px">
-        <div class="live-dot" style="background:#f87171"></div>
-        <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE TV</span>
-        <span id="hls-status" style="font-size:7.5px;color:rgba(255,255,255,.3)">— lädt…</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="live-dot" style="background:#f87171"></div>
+          <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">🇩🇪 DW NEWS LIVE</span>
+        </div>
+        <span id="hls-status" style="font-size:7.5px;color:rgba(255,255,255,.3)">lädt…</span>
       </div>
-      <!-- Channel switcher -->
-      <div class="hls-ch-sw" id="hls-sw">
-        <button class="hls-ch-btn active" onclick="hlsLoad('f24',this)">🇫🇷 France 24</button>
-        <button class="hls-ch-btn" onclick="hlsLoad('dw',this)">🇩🇪 DW News</button>
-        <button class="hls-ch-btn" onclick="hlsLoad('aje',this)">🇶🇦 Al Jazeera</button>
-        <button class="hls-ch-btn" onclick="hlsLoad('ara',this)">🇸🇦 العربية</button>
-      </div>
-      <!-- HLS video player -->
       <div class="hls-wrap" id="hls-wrap">
         <video id="hls-video" playsinline muted autoplay></video>
         <div class="hls-overlay" id="hls-ov">
           <div class="hls-spinner" id="hls-spin"></div>
           <div class="hls-err" id="hls-err">
             <div class="hls-err-ico">📡</div>
-            <div class="hls-err-txt" id="hls-err-txt">Stream nicht verfügbar<br>Sender-Link unten ↓</div>
+            <div class="hls-err-txt" id="hls-err-txt">Stream lädt…</div>
           </div>
         </div>
         <button class="hls-mute-btn" id="hls-mute" onclick="hlsToggleMute()">🔇 Ton</button>
-      </div>
-      <!-- Fallback: direct links -->
-      <div style="font-size:8px;color:rgba(255,255,255,.25);margin:6px 0 4px;text-align:center">Direktlinks → öffnet YouTube</div>
-      <div class="live-tv-grid">
-        <a class="live-tv-card" href="https://www.youtube.com/@France24_en/live" target="_blank" rel="noopener">
-          <span class="ltv-flag">🇫🇷</span><div class="ltv-info"><div class="ltv-name">France 24</div><div class="ltv-lang">English ↗</div></div>
-        </a>
-        <a class="live-tv-card" href="https://www.youtube.com/@DWNews/live" target="_blank" rel="noopener">
-          <span class="ltv-flag">🇩🇪</span><div class="ltv-info"><div class="ltv-name">DW News</div><div class="ltv-lang">English ↗</div></div>
-        </a>
-        <a class="live-tv-card" href="https://www.youtube.com/@AlJazeeraEnglish/live" target="_blank" rel="noopener">
-          <span class="ltv-flag">🇶🇦</span><div class="ltv-info"><div class="ltv-name">Al Jazeera</div><div class="ltv-lang">English ↗</div></div>
-        </a>
-        <a class="live-tv-card" href="https://www.youtube.com/@alarabiya/live" target="_blank" rel="noopener">
-          <span class="ltv-flag">🇸🇦</span><div class="ltv-info"><div class="ltv-name">العربية</div><div class="ltv-lang">عربي ↗</div></div>
-        </a>
       </div>
     </div>
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
@@ -2113,68 +2091,48 @@ renderCasChart();
 // ════════════════════════════════════════════
 
 // ════════════════════════════════════════════
-// HLS LIVE PLAYER
+// DW NEWS HLS LIVE PLAYER
 // ════════════════════════════════════════════
-const HLS_STREAMS = {
-  f24: { url:'https://stream.france24.com/hls/live/2037793/F24_EN_HI_HLS/master.m3u8', name:'France 24 EN' },
-  dw:  { url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8', name:'DW News' },
-  aje: { url:'https://live-hls-web-aje.getstreaming.io/hls/stream4.m3u8', name:'Al Jazeera EN' },
-  ara: { url:'https://live-hls-web-alarabia.getstreaming.io/hls/stream1.m3u8', name:'Al Arabiya' }
-};
+const DW_STREAM = 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8';
 let hlsInstance = null;
 
-function hlsLoad(ch, btn) {
-  const stream = HLS_STREAMS[ch];
-  if (!stream) return;
+function hlsStart() {
   const video   = document.getElementById('hls-video');
   const overlay = document.getElementById('hls-ov');
   const spinner = document.getElementById('hls-spin');
   const errBox  = document.getElementById('hls-err');
   const errTxt  = document.getElementById('hls-err-txt');
   const status  = document.getElementById('hls-status');
-
-  // Update buttons
-  document.querySelectorAll('.hls-ch-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-
-  // Reset UI
-  overlay.classList.remove('hidden');
-  spinner.style.display = 'block';
-  errBox.style.display  = 'none';
-  if (status) status.textContent = '— lädt ' + stream.name + '…';
-
-  // Destroy old hls instance
-  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+  if (!video) return;
 
   if (Hls.isSupported()) {
     hlsInstance = new Hls({ lowLatencyMode: true, maxBufferLength: 10 });
-    hlsInstance.loadSource(stream.url);
+    hlsInstance.loadSource(DW_STREAM);
     hlsInstance.attachMedia(video);
     hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
       video.play().catch(() => {});
       overlay.classList.add('hidden');
-      if (status) status.textContent = '🔴 ' + stream.name + ' — stumm';
+      if (status) status.textContent = '🔴 live';
     });
     hlsInstance.on(Hls.Events.ERROR, (e, data) => {
       if (data.fatal) {
         spinner.style.display = 'none';
         errBox.style.display  = 'flex';
-        errTxt.innerHTML = `${stream.name}<br>Stream nicht verfügbar<br><small style="color:rgba(255,255,255,.25)">CORS oder Sender offline</small>`;
-        if (status) status.textContent = '— nicht verfügbar';
+        errTxt.textContent    = 'Stream nicht verfügbar';
+        if (status) status.textContent = '—';
       }
     });
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    // Safari native HLS
-    video.src = stream.url;
+    video.src = DW_STREAM;
     video.addEventListener('loadedmetadata', () => {
       video.play().catch(() => {});
       overlay.classList.add('hidden');
-      if (status) status.textContent = '🔴 ' + stream.name;
+      if (status) status.textContent = '🔴 live';
     }, { once: true });
   } else {
-    errTxt.innerHTML = 'HLS nicht unterstützt<br>Direktlink unten ↓';
     spinner.style.display = 'none';
     errBox.style.display  = 'flex';
+    errTxt.textContent    = 'Browser unterstützt kein HLS';
   }
 }
 
@@ -2186,11 +2144,7 @@ function hlsToggleMute() {
   btn.textContent = video.muted ? '🔇 Ton' : '🔊 Stumm';
 }
 
-// Auto-start on page load
-document.addEventListener('DOMContentLoaded', () => {
-  const firstBtn = document.querySelector('.hls-ch-btn');
-  hlsLoad('f24', firstBtn);
-});
+document.addEventListener('DOMContentLoaded', hlsStart);
 
 // ════════════════════════════════════════════
 // MOBILE NAVIGATION
