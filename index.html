@@ -338,6 +338,66 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 }
 #replay-speed:hover{background:rgba(255,255,255,.1);color:#94a3b8}
 
+/* ── CARRIER POPUP OVERRIDE ── */
+.carrier-popup .leaflet-popup-content-wrapper{
+  background:#0d1829!important;border:1px solid rgba(34,211,238,.3)!important;
+  border-radius:10px!important;padding:0!important;
+  box-shadow:0 0 20px rgba(34,211,238,.2)!important;
+}
+.carrier-popup .leaflet-popup-content{margin:0!important}
+.carrier-popup .leaflet-popup-tip{background:#0d1829!important}
+
+/* ── DARK MAP LABEL OVERRIDE (dark text→light) ── */
+.leaflet-tooltip-country{
+  background:rgba(6,12,26,.85)!important;color:#94a3b8!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  font-size:10px!important;font-weight:700!important;
+  backdrop-filter:blur(6px)!important;
+}
+
+/* ── CARRIER LAUNCH SIMULATION ── */
+@keyframes carrierAlert{
+  0%,100%{box-shadow:0 0 10px rgba(34,211,238,.4),0 0 30px rgba(34,211,238,.2)}
+  50%{box-shadow:0 0 20px rgba(34,211,238,.9),0 0 50px rgba(34,211,238,.5),0 0 80px rgba(34,211,238,.2)}
+}
+@keyframes catapultSteam{
+  0%{width:4px;opacity:0.9;transform:scaleX(1)}
+  100%{width:60px;opacity:0;transform:scaleX(1)}
+}
+@keyframes launchClimb{
+  0%{transform:translate(-50%,-50%) scale(0.4) rotate(var(--angle));opacity:0.5}
+  20%{transform:translate(-50%,-80%) scale(0.9) rotate(var(--angle));opacity:1}
+  100%{transform:translate(-50%,-50%) scale(1) rotate(var(--angle));opacity:1}
+}
+@keyframes afterburnerPulse{
+  0%,100%{opacity:1;transform:scaleX(1)}
+  50%{opacity:0.6;transform:scaleX(0.6)}
+}
+@keyframes planeSmoke{
+  0%{transform:translate(-50%,-50%) scale(0.3);opacity:0.7}
+  100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}
+}
+.carrier-active{animation:carrierAlert 0.7s ease infinite}
+.fa18-icon{
+  font-size:20px;line-height:1;pointer-events:none;
+  filter:drop-shadow(0 0 5px rgba(251,191,36,.9)) drop-shadow(0 0 12px rgba(251,191,36,.5));
+}
+.fa18-afterburner{
+  position:absolute;width:12px;height:4px;
+  background:linear-gradient(90deg,transparent,rgba(251,191,36,.9),#fff);
+  border-radius:2px;
+  animation:afterburnerPulse 0.15s ease infinite;
+  filter:blur(1px);
+}
+.carrier-launch-badge{
+  position:fixed;top:64px;left:50%;transform:translateX(-50%);
+  background:rgba(4,9,22,.97);border:2px solid #22d3ee;border-radius:10px;
+  padding:8px 20px;font-size:11px;font-weight:800;color:#22d3ee;
+  letter-spacing:1.5px;z-index:2600;pointer-events:none;
+  box-shadow:0 0 30px rgba(34,211,238,.4);
+  animation:alertIn .3s cubic-bezier(.175,.885,.32,1.275) forwards;
+}
+
 /* ── LIVE WARNING RINGS ── */
 @keyframes warnPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8),0 0 18px rgba(220,38,38,.6)}50%{box-shadow:0 0 0 12px rgba(220,38,38,0),0 0 35px rgba(220,38,38,1)}}
 @keyframes warnRing{0%{transform:translate(-50%,-50%) scale(.4);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.8);opacity:0}}
@@ -1337,17 +1397,28 @@ function placeMarkers(){
 
     let ic;
     if(ship){
-      // ── Realistic SVG ship icon ──
+      // ── Realistic SVG ship icon with carrier flight deck overlay ──
       const svgHtml = shipSVG(loc.t);
       const w = loc.t==='carrier' ? 76 : 50;
       const h = loc.t==='carrier' ? 28 : 16;
+      // Carrier gets launch indicator dots on deck
+      const deckOverlay = loc.t==='carrier' ? `
+        <div style="position:absolute;top:30%;left:20%;width:100%;height:40%;pointer-events:none;display:flex;align-items:center;gap:6px;padding-left:8px">
+          <div style="width:4px;height:4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 4px #fbbf24;animation:blink 1.8s 0s infinite"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 4px #fbbf24;animation:blink 1.8s .4s infinite"></div>
+          <div style="width:4px;height:4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 4px #fbbf24;animation:blink 1.8s .8s infinite"></div>
+        </div>` : '';
+      const wakeHtml = `
+        <div style="position:absolute;left:-18px;top:35%;width:20px;height:30%;
+          background:linear-gradient(90deg,transparent,rgba(34,211,238,.25));
+          border-radius:50%;pointer-events:none"></div>`;
       ic = L.divIcon({
         className:'',
-        html:`<div style="
-          filter:drop-shadow(0 2px 6px rgba(0,180,255,.55)) drop-shadow(0 0 3px rgba(34,211,238,.4));
+        html:`<div style="position:relative;
+          filter:drop-shadow(0 2px 8px rgba(0,180,255,.7)) drop-shadow(0 0 5px rgba(34,211,238,.5));
           transform:rotate(${loc.t==='carrier'?'-5deg':'0deg'});
           cursor:pointer;
-        ">${svgHtml}</div>`,
+        ">${wakeHtml}${svgHtml}${deckOverlay}</div>`,
         iconSize:[w,h], iconAnchor:[w/2,h/2]
       });
     } else {
@@ -1397,7 +1468,38 @@ function placeMarkers(){
         </div>`;
     },{maxWidth:260});
 
-    if(ship) m.on('click',()=>showShipDetail(k));
+    if(ship){
+      // Register carrier for flash effect
+      if(CARRIER_LOCS.has(k)) registerCarrierMarker(k, m);
+
+      m.on('click',()=>{
+        showShipDetail(k);
+        // Carriers: show "Launch Strike" option in popup
+        if(CARRIER_LOCS.has(k)){
+          const loc2 = LOC[k];
+          m.bindPopup(`
+            <div style="font-family:Inter,sans-serif;background:#0d1829;color:#f1f5f9;
+              border-radius:8px;padding:10px 14px;min-width:180px">
+              <div style="font-size:10px;font-weight:800;color:#22d3ee;letter-spacing:1px;margin-bottom:6px">
+                ⚓ ${loc2.name.split('(')[0].trim()}
+              </div>
+              <div style="font-size:9px;color:#64748b;margin-bottom:10px">${loc2.desc?.slice(0,80)}…</div>
+              <button onclick="
+                L.popup().remove();
+                const targets=['natanz','fordow','tehran','isfahan'];
+                const tgt=targets[Math.floor(Math.random()*targets.length)];
+                simulateCarrierLaunch('${k}',tgt,'#fbbf24',4);
+              " style="
+                width:100%;padding:6px;background:rgba(251,191,36,.12);
+                border:1px solid rgba(251,191,36,.3);border-radius:6px;
+                color:#fbbf24;font-size:9.5px;font-weight:800;cursor:pointer;
+                font-family:inherit;letter-spacing:.5px;
+              ">✈️ SIMULATE STRIKE LAUNCH</button>
+            </div>
+          `,{className:'carrier-popup',maxWidth:220}).openPopup();
+        }
+      });
+    }
     ALL_MARKERS[k]=m;
   });
 }
@@ -2803,6 +2905,182 @@ function mobTab(tab){
 }
 
 // ════════════════════════════════════════════
+// CARRIER LAUNCH SIMULATION
+// ════════════════════════════════════════════
+
+// Which LOC keys are carriers or airbases (for launch simulation)
+const CARRIER_LOCS   = new Set(['ford','truman','lincoln','roosevelt','ike']);
+const AIRBASE_LOCS   = new Set(['udeid','nevatim','tanf','ainAlAsad','bahrain']);
+const CARRIER_NAMES  = {
+  ford:'USS Gerald R. Ford',truman:'USS Harry S. Truman',
+  lincoln:'USS Abraham Lincoln',roosevelt:'USS Theodore Roosevelt',ike:'USS Eisenhower'
+};
+const AIRBASE_NAMES  = {
+  udeid:'Al Udeid AB',nevatim:'Nevatim AFB',tanf:'At-Tanf Base',
+  ainAlAsad:'Ain Al-Assad AB',bahrain:'5th Fleet Bahrain'
+};
+
+// Carrier marker registry — so we can flash them
+const CARRIER_MARKERS = {};
+
+function registerCarrierMarker(locKey, leafletMarker){
+  CARRIER_MARKERS[locKey] = leafletMarker;
+}
+
+function flashCarrier(locKey){
+  const m = CARRIER_MARKERS[locKey];
+  if(!m) return;
+  const el = m.getElement();
+  if(!el) return;
+  const inner = el.firstChild;
+  if(inner){ inner.classList.add('carrier-active'); setTimeout(()=>inner.classList.remove('carrier-active'), 8000); }
+}
+
+function showCarrierLaunchBadge(fromKey, toKey, numPlanes, isCarrier){
+  const fromName = CARRIER_NAMES[fromKey] || AIRBASE_NAMES[fromKey] || fromKey;
+  const toName   = LOC[toKey]?.name || toKey;
+  const typeStr  = isCarrier ? '✈️ CARRIER STRIKE' : '✈️ AIRBASE STRIKE';
+  const badge = document.createElement('div');
+  badge.className = 'carrier-launch-badge';
+  badge.innerHTML  = `${typeStr} &nbsp;·&nbsp; ${fromName} &nbsp;→&nbsp; ${toName} &nbsp;·&nbsp; ${numPlanes} AIRCRAFT AIRBORNE`;
+  document.body.appendChild(badge);
+  setTimeout(()=>{ badge.style.opacity='0'; badge.style.transition='opacity .5s'; setTimeout(()=>document.body.removeChild(badge),600); }, 6000);
+}
+
+function simulateCarrierLaunch(fromLocKey, toLocKey, color, numPlanes){
+  const fromLoc = LOC[fromLocKey];
+  const toLoc   = LOC[toLocKey];
+  if(!fromLoc || !toLoc) return;
+
+  const isCarrier = CARRIER_LOCS.has(fromLocKey);
+  numPlanes = numPlanes || (isCarrier ? 4 : 3);
+
+  // Flash the carrier/base marker
+  flashCarrier(fromLocKey);
+
+  // Show launch badge
+  showCarrierLaunchBadge(fromLocKey, toLocKey, numPlanes, isCarrier);
+
+  // Play carrier launch sound
+  playCarrierLaunchSound();
+
+  // Catapult steam effect at carrier position (DOM overlay)
+  showCatapultSteam(fromLoc, color, numPlanes);
+
+  // Launch planes with staggered delay
+  const planeDelay = isCarrier ? 1200 : 800;
+  for(let i = 0; i < numPlanes; i++){
+    setTimeout(()=>{
+      launchSingleAircraft(fromLoc, toLoc, color, i, numPlanes, isCarrier);
+    }, i * planeDelay);
+  }
+}
+
+function showCatapultSteam(fromLoc, color, count){
+  const pt = map.latLngToContainerPoint([fromLoc.lat, fromLoc.lng]);
+  for(let i=0; i<count; i++){
+    setTimeout(()=>{
+      const steam = document.createElement('div');
+      steam.style.cssText=`
+        position:fixed;left:${pt.x}px;top:${pt.y}px;
+        pointer-events:none;z-index:1999;
+      `;
+      steam.innerHTML=`
+        <div style="position:absolute;top:50%;left:50%;
+          height:3px;background:linear-gradient(90deg,rgba(255,255,255,.9),rgba(34,211,238,.6),transparent);
+          border-radius:2px;transform-origin:left center;
+          animation:catapultSteam 0.4s ease-out forwards"></div>
+        <div style="position:absolute;top:50%;left:50%;width:16px;height:16px;
+          background:radial-gradient(circle,rgba(255,255,255,.8),rgba(34,211,238,.4),transparent);
+          border-radius:50%;animation:planeSmoke 0.8s ease-out forwards"></div>
+      `;
+      document.body.appendChild(steam);
+      setTimeout(()=>{ try{document.body.removeChild(steam);}catch{} }, 900);
+    }, i * 1200);
+  }
+}
+
+function launchSingleAircraft(fromLoc, toLoc, color, planeIdx, totalPlanes, isCarrier){
+  // Slight spread: offset each plane a tiny bit from carrier center
+  const spread = 0.15;
+  const offsetLat = fromLoc.lat + (Math.random()-0.5)*spread;
+  const offsetLng = fromLoc.lng + (Math.random()-0.5)*spread;
+
+  // Build full bezier path
+  const pts = bez([offsetLat, offsetLng], [toLoc.lat, toLoc.lng], 0.20, (planeIdx-totalPlanes/2)*0.04);
+
+  // Choose aircraft icon based on attacker type
+  const acIcon = isCarrier ? '✈' : '▲';
+  const acLabel = isCarrier ? 'F/A-18' : 'F-35I';
+
+  // Build marker HTML
+  const iconHtml = `
+    <div style="position:relative;display:flex;align-items:center;justify-content:center">
+      <div class="fa18-icon" style="
+        font-size:${isCarrier?18:16}px;
+        filter:drop-shadow(0 0 5px ${color}) drop-shadow(0 0 12px ${color}88);
+        color:${color};font-style:normal;font-family:serif;
+      ">${acIcon}</div>
+      <div class="fa18-afterburner" style="
+        position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+        background:linear-gradient(90deg,transparent,${color},#fff);
+      "></div>
+    </div>`;
+
+  const divIcon = L.divIcon({className:'',html:iconHtml,iconSize:[26,26],iconAnchor:[13,13]});
+  const plane   = L.marker([offsetLat, offsetLng], {icon:divIcon, zIndexOffset:2100, interactive:false}).addTo(map);
+
+  // Climb animation — DOM
+  const el = plane.getElement();
+  if(el){
+    el.style.transform='scale(0.3)';
+    el.style.transition='transform 0.4s ease-out';
+    requestAnimationFrame(()=>{ el.style.transform='scale(1)'; });
+  }
+
+  // Fly along path
+  let i = 0;
+  const speed = isCarrier ? 2 : 3;
+
+  function flyStep(){
+    if(i >= pts.length - 1){
+      map.removeLayer(plane);
+      // Small explosion at target (softer than missile impact)
+      showExplosion([toLoc.lat, toLoc.lng], color, 'usa');
+      return;
+    }
+    const curr = pts[i];
+    const next  = pts[Math.min(i+speed, pts.length-1)];
+    const angle = Math.atan2(next[1]-curr[1], next[0]-curr[0]) * (180/Math.PI);
+    plane.setLatLng(curr);
+
+    // Rotate icon
+    const pEl = plane.getElement();
+    if(pEl){
+      const inner = pEl.querySelector('.fa18-icon');
+      if(inner) inner.style.transform = `rotate(${angle}deg)`;
+      const trail = pEl.querySelector('.fa18-afterburner');
+      if(trail) trail.style.transform = `translateY(-50%) rotate(${angle+180}deg)`;
+    }
+
+    // Leave contrail every 8 frames
+    if(i % 8 === 0){
+      const trail = L.circleMarker(curr,{
+        radius:1.5, color:color, fillColor:color,
+        fillOpacity:0.4, weight:0, interactive:false
+      }).addTo(map);
+      setTimeout(()=>{ try{map.removeLayer(trail);}catch{} }, 4000);
+    }
+
+    i += speed;
+    requestAnimationFrame(flyStep);
+  }
+
+  // Short delay after catapult steam before flying
+  setTimeout(flyStep, 500);
+}
+
+// ════════════════════════════════════════════
 // MISSILE ANIMATION + EXPLOSION EFFECTS
 // ════════════════════════════════════════════
 const MISSILE_ICONS={iran:'🚀',israel:'✈️',usa:'💥'};
@@ -2897,13 +3175,22 @@ function showExplosion(latlng, color, attacker){
   playImpactSound(color);
 }
 
-// Hook missile animation into triggerNewsAttack
+// Hook missile + carrier launch animation into triggerNewsAttack
 const _origDrawAttack = triggerNewsAttack;
 triggerNewsAttack = function(item, atk){
   _origDrawAttack(item, atk);
   const from=LOC[atk.from], to=LOC[atk.to];
-  if(from&&to){
-    const pts=bez([from.lat,from.lng],[to.lat,to.lng],atk.lift||0.18,atk.shift||0);
+  if(!from||!to) return;
+  const pts=bez([from.lat,from.lng],[to.lat,to.lng],atk.lift||0.18,atk.shift||0);
+
+  if(atk.att==='usa' && (CARRIER_LOCS.has(atk.from) || AIRBASE_LOCS.has(atk.from))){
+    // USA carrier/airbase strike → launch aircraft simulation
+    simulateCarrierLaunch(atk.from, atk.to, atk.color||'#fbbf24', 4);
+  } else if(atk.att==='israel' && AIRBASE_LOCS.has(atk.from)){
+    // Israel airbase → F-35I launch
+    simulateCarrierLaunch(atk.from, atk.to, atk.color||'#60a5fa', 3);
+  } else {
+    // Iran/other → missile animation
     animateMissile(pts, atk.color, atk.att, null);
   }
 };
@@ -2949,6 +3236,36 @@ function playImpactSound(color){
       osc.connect(g2); g2.connect(ctx.destination);
       osc.start(); osc.stop(ctx.currentTime+0.3);
     },50);
+  }catch(e){}
+}
+
+function playCarrierLaunchSound(){
+  if(!soundOn) return;
+  try{
+    const ctx=getAudioCtx();
+    // Jet turbine spin-up
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime+0.8);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime+0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+1.2);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime+1.2);
+
+    // Catapult thud at t=0.35s
+    setTimeout(()=>{
+      const buf=ctx.createBuffer(1,ctx.sampleRate*0.15,ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++){
+        d[i]=Math.exp(-i/ctx.sampleRate*40)*((Math.random()*2-1)*0.8);
+      }
+      const s=ctx.createBufferSource(); s.buffer=buf;
+      const g=ctx.createGain(); g.gain.value=0.5;
+      s.connect(g); g.connect(ctx.destination); s.start();
+    }, 350);
   }catch(e){}
 }
 
