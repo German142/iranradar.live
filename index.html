@@ -627,6 +627,74 @@ const FLAGS={Iran:'🇮🇷',Israel:'🇮🇱',USA:'🇺🇸',Syria:'🇸🇾'};
 
 const ALL_MARKERS={};
 
+// ── Ship SVG silhouettes (top-down view) ──────────────────────────────────
+function shipSVG(type){
+  if(type==='carrier'){
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="76" height="28" viewBox="0 0 76 28">
+      <!-- Wake / bow wave -->
+      <ellipse cx="70" cy="14" rx="8" ry="3" fill="rgba(34,211,238,.18)"/>
+      <ellipse cx="6"  cy="14" rx="6" ry="2.5" fill="rgba(34,211,238,.12)"/>
+      <!-- Hull shadow -->
+      <ellipse cx="38" cy="16" rx="34" ry="5" fill="rgba(0,0,0,.35)"/>
+      <!-- Main flight deck -->
+      <polygon points="10,6 66,5 71,14 66,23 10,22" fill="#1e3a8a"/>
+      <!-- Deck surface -->
+      <polygon points="11,7 64,6 69,14 64,21 11,21" fill="#1d4ed8"/>
+      <!-- Angled landing strip (port side) -->
+      <line x1="20" y1="21" x2="56" y2="8"  stroke="#93c5fd" stroke-width="1.8" opacity=".8"/>
+      <!-- Center axial line -->
+      <line x1="12" y1="14" x2="68" y2="14" stroke="#bfdbfe" stroke-width=".7" opacity=".4"/>
+      <!-- Deck markings - landing zone -->
+      <rect x="52" y="10" width="10" height="8" rx="1" fill="none" stroke="#60a5fa" stroke-width=".8" opacity=".6"/>
+      <!-- Island / superstructure (starboard) -->
+      <rect x="44" y="5"  width="13" height="9" rx="1.5" fill="#0c4a6e"/>
+      <rect x="45" y="3"  width="4"  height="4" rx=".5"  fill="#0369a1"/>
+      <rect x="50" y="3"  width="2"  height="3" rx=".5"  fill="#0369a1"/>
+      <!-- Mast -->
+      <line x1="47" y1="1" x2="47" y2="4" stroke="#7dd3fc" stroke-width="1.2"/>
+      <line x1="44" y1="2" x2="50" y2="2" stroke="#7dd3fc" stroke-width=".8"/>
+      <!-- Bow -->
+      <polygon points="64,6 72,14 64,22" fill="#1e3a8a"/>
+      <!-- Stern -->
+      <polygon points="11,7 5,14 11,21" fill="#1e3a8a"/>
+      <!-- Catapult lines -->
+      <line x1="14" y1="10" x2="40" y2="9"  stroke="#60a5fa" stroke-width=".8" opacity=".5"/>
+      <line x1="14" y1="14" x2="40" y2="13" stroke="#60a5fa" stroke-width=".8" opacity=".5"/>
+    </svg>`;
+  } else {
+    // Arleigh Burke-class Destroyer
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="50" height="16" viewBox="0 0 50 16">
+      <!-- Wake -->
+      <ellipse cx="45" cy="8" rx="7" ry="2.5" fill="rgba(34,211,238,.18)"/>
+      <ellipse cx="4"  cy="8" rx="5" ry="2"   fill="rgba(34,211,238,.10)"/>
+      <!-- Hull shadow -->
+      <ellipse cx="25" cy="10" rx="22" ry="3.5" fill="rgba(0,0,0,.3)"/>
+      <!-- Hull -->
+      <polygon points="8,4 40,3 47,8 40,13 8,12" fill="#0c4a6e"/>
+      <!-- Deck surface -->
+      <polygon points="9,5 39,4 45,8 39,12 9,11" fill="#0369a1"/>
+      <!-- Superstructure fore -->
+      <rect x="16" y="5" width="9" height="6" rx="1" fill="#0e7490"/>
+      <!-- Superstructure aft -->
+      <rect x="28" y="5" width="7" height="5" rx="1" fill="#155e75"/>
+      <!-- Mast (fore) -->
+      <line x1="21" y1="2" x2="21" y2="5" stroke="#7dd3fc" stroke-width="1.2"/>
+      <line x1="18" y1="3" x2="24" y2="3" stroke="#7dd3fc" stroke-width=".8"/>
+      <!-- Mast (aft) -->
+      <line x1="32" y1="3" x2="32" y2="5" stroke="#7dd3fc" stroke-width=".9"/>
+      <!-- Gun turret fore -->
+      <circle cx="13" cy="8" r="2" fill="#164e63"/>
+      <line x1="13" y1="6" x2="13" y2="3" stroke="#0891b2" stroke-width="1"/>
+      <!-- VLS cells -->
+      <rect x="10" y="6" width="5" height="4" rx=".5" fill="none" stroke="#22d3ee" stroke-width=".7" opacity=".7"/>
+      <!-- Bow -->
+      <polygon points="39,4 46,8 39,12" fill="#0c4a6e"/>
+      <!-- Stern -->
+      <polygon points="9,5 4,8 9,11" fill="#0c4a6e"/>
+    </svg>`;
+  }
+}
+
 function placeMarkers(){
   Object.entries(LOC).forEach(([k,loc])=>{
     const ship = loc.t==='carrier'||loc.t==='destroyer';
@@ -635,15 +703,32 @@ function placeMarkers(){
     const shape= ship?'5px':'50%';
     const flag = FLAGS[loc.cc]||'📍';
 
-    // Icon: flag emoji + colored ring
-    const ic = L.divIcon({
+    let ic;
+    if(ship){
+      // ── Realistic SVG ship icon ──
+      const svgHtml = shipSVG(loc.t);
+      const w = loc.t==='carrier' ? 76 : 50;
+      const h = loc.t==='carrier' ? 28 : 16;
+      ic = L.divIcon({
+        className:'',
+        html:`<div style="
+          filter:drop-shadow(0 2px 6px rgba(0,180,255,.55)) drop-shadow(0 0 3px rgba(34,211,238,.4));
+          transform:rotate(${loc.t==='carrier'?'-5deg':'0deg'});
+          cursor:pointer;
+        ">${svgHtml}</div>`,
+        iconSize:[w,h], iconAnchor:[w/2,h/2]
+      });
+    } else {
+    // Non-ship: flag emoji + colored ring
+    ic = L.divIcon({
       className:'',
       html:`<div style="position:relative;width:${sz+8}px;height:${sz+8}px;display:flex;align-items:center;justify-content:center">
         <div style="position:absolute;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};border:2px solid #fff;box-shadow:0 2px 6px ${col}80,0 0 0 1px ${col}40"></div>
-        <span style="position:relative;font-size:${sz*0.75}px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${ship?(loc.t==='carrier'?'✈':'🎯'):flag}</span>
+        <span style="position:relative;font-size:${sz*0.75}px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${flag}</span>
       </div>`,
       iconSize:[sz+8,sz+8],iconAnchor:[(sz+8)/2,(sz+8)/2]
     });
+    }
 
     const m=L.marker([loc.lat,loc.lng],{icon:ic,zIndexOffset:ship?600:(['capital'].includes(loc.t)?200:0)}).addTo(map);
 
@@ -1656,4 +1741,5 @@ async function runAnimation(){
 </script>
 </body>
 </html>
+
 
