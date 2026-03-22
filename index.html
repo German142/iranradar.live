@@ -282,6 +282,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .xpost-act{font-size:8.5px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:3px}
 .xnew{animation:xslide .4s ease}
 @keyframes xslide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+/* ── YouTube Live ── */
+.yt-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.08)}
+.yt-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%}
+.yt-ch-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;color:rgba(255,255,255,.5);font-size:8.5px;font-weight:700;padding:3px 7px;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.3px}
+.yt-ch-btn:hover{background:rgba(255,255,255,.12);color:#f1f5f9}
+.yt-ch-btn.active{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.5);color:#f87171}
 
 /* ════════════════════════════════════════════
    MOBILE NAV BAR (always in DOM, hidden on desktop)
@@ -489,28 +495,26 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       <div id="cas-chart-svg"></div>
     </div>
 
-    <div class="sec">
-      <div class="sec-ttl" id="ttl-filter">Filter Phase</div>
-      <div class="pbtn on" onclick="filterPhase('all',this)">
-        <div><div class="pbtn-date">2024–2026</div><div class="pbtn-name">All Events</div></div>
-        <div class="ptag all">ALL</div>
+    <!-- ══ YOUTUBE LIVE STREAM ══ -->
+    <div class="sec" style="padding-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="live-dot" style="background:#f87171"></div>
+          <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE STREAM</span>
+        </div>
+        <div style="display:flex;gap:4px" id="yt-sw">
+          <button class="yt-ch-btn active" onclick="switchYT('aj',this)" title="Al Jazeera English">AJ</button>
+          <button class="yt-ch-btn" onclick="switchYT('dw',this)" title="DW News">DW</button>
+          <button class="yt-ch-btn" onclick="switchYT('f24',this)" title="France 24">F24</button>
+        </div>
       </div>
-      <div class="pbtn" onclick="filterPhase('apr2024',this)">
-        <div><div class="pbtn-date">13. Apr 2024</div><div class="pbtn-name">True Promise I</div></div>
-        <div class="ptag ir">IRAN</div>
+      <div class="yt-wrap">
+        <iframe id="yt-frame"
+          src="https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJdpkiXA&autoplay=0&modestbranding=1&rel=0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen frameborder="0" loading="lazy"></iframe>
       </div>
-      <div class="pbtn" onclick="filterPhase('oct2024',this)">
-        <div><div class="pbtn-date">01. Oct 2024</div><div class="pbtn-name">True Promise II</div></div>
-        <div class="ptag ir">IRAN</div>
-      </div>
-      <div class="pbtn" onclick="filterPhase('jun2025',this)">
-        <div><div class="pbtn-date">13–24. Jun 2025</div><div class="pbtn-name">12-Day War</div></div>
-        <div class="ptag all">JOINT</div>
-      </div>
-      <div class="pbtn" onclick="filterPhase('feb2026',this)">
-        <div><div class="pbtn-date">Feb 2026 →</div><div class="pbtn-name">Iran War 2026</div></div>
-        <div class="ptag all">ACTIVE</div>
-      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,.25);margin-top:5px;text-align:center">Al Jazeera English · Live 24/7</div>
     </div>
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
     <div class="tl" id="tl"></div>
@@ -2076,6 +2080,24 @@ function renderCasChart(){
 // Init on load
 renderDailyBrief();
 renderCasChart();
+
+// ════════════════════════════════════════════
+// YOUTUBE CHANNEL SWITCHER
+// ════════════════════════════════════════════
+const YT_CHANNELS={
+  aj:{src:'https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJdpkiXA&autoplay=0&modestbranding=1&rel=0', label:'Al Jazeera English · Live 24/7'},
+  dw:{src:'https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg&autoplay=0&modestbranding=1&rel=0', label:'DW News · Live 24/7'},
+  f24:{src:'https://www.youtube.com/embed/live_stream?channel=UCQfwfsi5VrQ8yKL-UpRNNOA&autoplay=0&modestbranding=1&rel=0', label:'France 24 English · Live 24/7'}
+};
+function switchYT(ch, btn){
+  const frame=document.getElementById('yt-frame');
+  const info=frame?.nextElementSibling;
+  if(!frame) return;
+  frame.src=YT_CHANNELS[ch].src;
+  if(info) info.textContent=YT_CHANNELS[ch].label;
+  document.querySelectorAll('.yt-ch-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
 
 // ════════════════════════════════════════════
 // MOBILE NAVIGATION
