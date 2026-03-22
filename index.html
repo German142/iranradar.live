@@ -121,6 +121,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .leaflet-popup-tip{background:rgba(5,12,32,.96)}
 .leaflet-popup-content{margin:12px 14px;font-family:'Inter',sans-serif}
 .leaflet-container a.leaflet-popup-close-button{color:var(--sub)}
+/* Strike popup: cursor hint on clickable warn markers */
+.leaflet-interactive{cursor:pointer!important}
 .pu-title{font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:5px}
 .pu-sub{font-size:10px;color:var(--sub);margin-bottom:7px}
 .pu-div{height:1px;background:rgba(255,255,255,.08);margin:7px 0}
@@ -1079,8 +1081,8 @@ function triggerNewsAttack(item, atk){
     },5000);
   }
 
-  // 2) Impact warning marker on map — news-confirmed (green, 2 min)
-  addWarnMarker(atk, timeStr, 120000, true);
+  // 2) Impact warning marker on map — news-confirmed (green, 2 min) + clickable popup
+  addWarnMarker(atk, timeStr, 120000, true, item);
 
   // 3) Attack alert banner (with real headline as subtitle)
   const el=document.getElementById('attack-alert');
@@ -1211,7 +1213,7 @@ async function loadLiveNews(manual=false){
         if(detectedAtk){
           const now=new Date();
           const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-          setTimeout(()=>addWarnMarker(detectedAtk,t,90000,true), markerDelay);
+          setTimeout(()=>addWarnMarker(detectedAtk,t,90000,true,article), markerDelay);
           markerDelay+=600;
         }
       });
@@ -1292,7 +1294,7 @@ function removeWarnMarker(id, fade=true){
 }
 
 // duration: ms until expiry | confirmed: true=news-confirmed (green), false=simulated (red)
-function addWarnMarker(atk, timeOverride, duration, confirmed=false){
+function addWarnMarker(atk, timeOverride, duration, confirmed=false, newsItem=null){
   const to=LOC[atk.to]; if(!to) return;
   removeWarnMarker(atk.id, false); // remove old immediately
 
@@ -1302,6 +1304,7 @@ function addWarnMarker(atk, timeOverride, duration, confirmed=false){
   const pulse = confirmed ? 'none' : 'warnPulse 1.6s infinite';
   const t     = timeOverride||ATK_TIMES[atk.id]||'';
   const dur   = duration||(confirmed ? 120000 : 30000);
+  const hasPopup = confirmed && newsItem;
 
   // Ring 1
   const ring1=L.marker([to.lat,to.lng],{
@@ -1317,7 +1320,8 @@ function addWarnMarker(atk, timeOverride, duration, confirmed=false){
       iconSize:[0,0],iconAnchor:[0,0]}),
     interactive:false,zIndexOffset:1800
   }).addTo(map);
-  // Badge
+  // Badge — clickable hint when confirmed
+  const clickHint = hasPopup ? ' 🔍' : '';
   const badge=L.marker([to.lat,to.lng],{
     icon:L.divIcon({className:'',
       html:`<div style="
@@ -1332,19 +1336,140 @@ function addWarnMarker(atk, timeOverride, duration, confirmed=false){
         text-shadow:0 1px 3px rgba(0,0,0,.4);
       ">
         <span style="${confirmed?'':'animation:warnBlink .7s infinite;'}font-size:11px">${confirmed?'✅':'⚠'}</span>
-        <span>${label}${t?' · '+t+' UHR':''}</span>
+        <span>${label}${t?' · '+t+' UHR':''}${clickHint}</span>
       </div>`,
-      iconSize:[180,28],iconAnchor:[90,14]}),
+      iconSize:[hasPopup?210:180,28],iconAnchor:[hasPopup?105:90,14]}),
     interactive:false,zIndexOffset:2000
   }).addTo(map);
 
-  WARN_LAYERS[atk.id]=[ring1,ring2,badge];
+  // Clickable invisible circle marker — shows popup with weapon + district info
+  const layers=[ring1,ring2,badge];
+  if(hasPopup){
+    const clickMarker=L.circleMarker([to.lat,to.lng],{
+      radius:28, fillOpacity:0, opacity:0,
+      interactive:true, zIndexOffset:2100
+    }).addTo(map);
+    clickMarker.bindPopup(buildStrikePopup(atk,newsItem,t),{
+      maxWidth:270, className:'', offset:[0,-10]
+    });
+    // Also pan to marker on open
+    clickMarker.on('popupopen',()=>map.panTo([to.lat,to.lng],{animate:true,duration:.5}));
+    layers.push(clickMarker);
+  }
+
+  WARN_LAYERS[atk.id]=layers;
   // Auto-Ablauf mit Fade
   WARN_TIMERS[atk.id]=setTimeout(()=>removeWarnMarker(atk.id,true), dur);
 }
 
 // ATT_NAMES wird von triggerNewsAttack genutzt
 const ATT_NAMES={iran:'🇮🇷 IRAN',israel:'🇮🇱 ISRAEL',usa:'🇺🇸 USA'};
+
+// ════════════════════════════════════════════
+// STRIKE POPUP HELPERS
+// ════════════════════════════════════════════
+
+function extractWeaponInfo(title,atk){
+  const t=(title||'').toLowerCase();
+  const weapons=[];
+  const dm=t.match(/(\d[\d,\.]*)\s*(?:\+\s*)?(?:shaheed|shahed|drone|drohne|uav)/);
+  const bm=t.match(/(\d[\d,\.]*)\s*(?:\+\s*)?(?:ballistic|fattah|emad|shahab|ghadr)/);
+  const cm=t.match(/(\d[\d,\.]*)\s*(?:\+\s*)?(?:cruise missile|tomahawk|zolfaghar)/);
+  const rm=t.match(/(\d[\d,\.]*)\s*(?:\+\s*)?(?:rocket|rakete)/);
+  if(dm) weapons.push('🚁 '+parseInt(dm[1].replace(/[,\.]/g,''))+' Drohnen');
+  if(bm) weapons.push('🚀 '+parseInt(bm[1].replace(/[,\.]/g,''))+' Ballistische Raketen');
+  if(cm) weapons.push('✈️ '+parseInt(cm[1].replace(/[,\.]/g,''))+' Marschflugkörper');
+  if(rm&&!bm&&!cm) weapons.push('💥 '+parseInt(rm[1].replace(/[,\.]/g,''))+' Raketen');
+  if(!weapons.length){
+    if(/drone|shahed|shaheed|drohne|uav/.test(t))          weapons.push('🚁 Drohnen');
+    if(/ballistic|fattah|emad|shahab/.test(t))             weapons.push('🚀 Ballistische Rakete');
+    if(/cruise missile|tomahawk|marschflugkörper/.test(t)) weapons.push('✈️ Marschflugkörper');
+    if(/b-2|b2 bomber|bunker buster|gbu/.test(t))          weapons.push('💣 Bunker-Buster-Bombe');
+    if(/airstrike|luftangriff|f-35|f35/.test(t))           weapons.push('✈️ Luftangriff (Jet)');
+    else if(/missile|rakete/.test(t))                      weapons.push('🚀 Rakete');
+  }
+  if(!weapons.length&&atk){
+    if(atk.drones>0)    weapons.push('🚁 Drohnen');
+    if(atk.ballistic>0) weapons.push('🚀 Ballistische Raketen');
+    if(atk.cruise>0)    weapons.push('✈️ Marschflugkörper');
+  }
+  return weapons.length?weapons.join('<br>'):'⚔️ Militärischer Angriff';
+}
+
+function extractDistrict(title,toLoc){
+  const t=(title||'').toLowerCase();
+  if(/dizengoff/.test(t))              return 'Dizengoff-Viertel, Tel Aviv';
+  if(/jaffa|yafo/.test(t))             return 'Jaffa (Tel Aviv)';
+  if(/ramat.?gan/.test(t))             return 'Ramat Gan';
+  if(/petah.?tikva/.test(t))           return 'Petah Tikva';
+  if(/rishon/.test(t))                 return 'Rishon LeZion';
+  if(/be.?er.?sheva|beersheba/.test(t))return 'Beersheba (Negev)';
+  if(/ashdod/.test(t))                 return 'Ashdod';
+  if(/ashkelon/.test(t))               return 'Ashkelon';
+  if(/haifa bay|haifa port/.test(t))   return 'Hafenviertel, Haifa';
+  if(/haifa/.test(t))                  return 'Haifa';
+  if(/netanya/.test(t))                return 'Netanya';
+  if(/herzliya/.test(t))               return 'Herzliya';
+  if(/north.?tehran|tehran.?north/.test(t)) return 'Nordtehran';
+  if(/south.?tehran|tehran.?south/.test(t)) return 'Südtehran';
+  if(/natanz/.test(t))                 return 'Natanz (Prov. Isfahan)';
+  if(/fordow/.test(t))                 return 'Fordow (bei Qom)';
+  if(/karaj/.test(t))                  return 'Karaj (Großraum Teheran)';
+  if(/erbil|hewler/.test(t))           return 'Erbil, Kurdistan';
+  if(/baghdad|bagdad/.test(t))         return 'Bagdad';
+  if(/riyadh|riad/.test(t))            return 'Riad, Saudi-Arabien';
+  if(/jeddah|dschidda/.test(t))        return 'Dschidda';
+  if(/manama/.test(t))                 return 'Manama, Bahrain';
+  if(/mina.?ahmadi/.test(t))           return 'Mina Al-Ahmadi Raffinerie';
+  if(/al.?udeid|doha/.test(t))         return 'Al Udeid / Doha, Katar';
+  if(/diego.?garcia/.test(t))          return 'Diego Garcia (Ind. Ozean)';
+  if(toLoc) return toLoc.name+(toLoc.cc&&toLoc.cc!==toLoc.name?', '+toLoc.cc:'');
+  return null;
+}
+
+function buildStrikePopup(atk,newsItem,timeStr){
+  const toLoc=LOC[atk.to]||{};
+  const col=atk.color||'#34d399';
+  const attName=ATT_NAMES[atk.att]||atk.att||'–';
+  const weapon=extractWeaponInfo(newsItem.title,atk);
+  const district=extractDistrict(newsItem.title,toLoc);
+  const abfRate=atk.abf||'–';
+  const shortTitle=(newsItem.title||'').length>110?newsItem.title.substring(0,110)+'…':(newsItem.title||'');
+  const srcDomain=newsItem.domain||newsItem.src||'–';
+  const articleLink=newsItem.url?`<a href="${newsItem.url}" target="_blank" style="color:#22d3ee;text-decoration:none;font-weight:700">↗ Artikel</a>`:'';
+  return `<div style="font-family:'Inter',sans-serif;min-width:220px;max-width:255px">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">
+      <div style="width:7px;height:7px;border-radius:50%;background:#34d399;flex-shrink:0"></div>
+      <div style="font-size:8.5px;font-weight:800;letter-spacing:1.4px;color:#34d399">✅ CONFIRMED · ${timeStr||''}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 8px">
+        <div style="font-size:7px;color:#64748b;font-weight:700;letter-spacing:.8px;margin-bottom:2px">ANGREIFER</div>
+        <div style="font-size:10.5px;font-weight:800;color:${col}">${attName}</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 8px">
+        <div style="font-size:7px;color:#64748b;font-weight:700;letter-spacing:.8px;margin-bottom:2px">ZIEL</div>
+        <div style="font-size:10.5px;font-weight:800;color:#f1f5f9">${toLoc.name||atk.to}</div>
+      </div>
+    </div>
+    <div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.18);border-radius:6px;padding:7px 9px;margin-bottom:6px">
+      <div style="font-size:7px;color:#64748b;font-weight:700;letter-spacing:.8px;margin-bottom:3px">🔫 WAFFE</div>
+      <div style="font-size:11px;font-weight:700;color:#fbbf24;line-height:1.5">${weapon}</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:7px 9px;margin-bottom:6px">
+      <div style="font-size:7px;color:#64748b;font-weight:700;letter-spacing:.8px;margin-bottom:3px">📍 STADTTEIL / GEBIET</div>
+      <div style="font-size:11px;font-weight:700;color:#f1f5f9;line-height:1.4">${district||'–'}</div>
+    </div>
+    ${abfRate!=='—'?`<div style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:6px;padding:5px 9px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:7.5px;color:#64748b;font-weight:700">ABFANGRATE</span><span style="font-size:11px;font-weight:800;color:#34d399">${abfRate}</span></div>`:''}
+    <div style="border-left:2px solid ${col}55;padding-left:7px;margin-bottom:7px">
+      <div style="font-size:8.5px;color:#94a3b8;line-height:1.45;font-style:italic">"${shortTitle}"</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:8px;color:#475569">
+      <span>📡 ${srcDomain} · ${newsItem.date||''}</span><span>${articleLink}</span>
+    </div>
+  </div>`;
+}
+
 function clearAttackAlert(){
   const el=document.getElementById('attack-alert');
   el.style.animation='alertOut .35s ease forwards';
