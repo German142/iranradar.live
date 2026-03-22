@@ -282,6 +282,104 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .xpost-act{font-size:8.5px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:3px}
 .xnew{animation:xslide .4s ease}
 @keyframes xslide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ════════════════════════════════════════════
+   MOBILE NAV BAR (always in DOM, hidden on desktop)
+   ════════════════════════════════════════════ */
+#mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;height:54px;
+  background:rgba(6,10,28,.98);
+  border-top:1px solid rgba(255,255,255,.1);
+  z-index:3000;
+  align-items:stretch;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+.mob-tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;
+  color:rgba(255,255,255,.38);font-size:9px;font-weight:700;
+  letter-spacing:.5px;border:none;background:none;
+  font-family:inherit;transition:color .15s;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.mob-tab.active{color:#22d3ee}
+.mob-tab svg{width:22px;height:22px;stroke-width:1.8}
+#mob-overlay{
+  display:none;position:fixed;
+  top:46px;bottom:54px;left:0;right:0;
+  background:rgba(0,0,0,.55);z-index:1998;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+#mob-overlay.show{display:block}
+
+/* ════════════════════════════════════════════
+   RESPONSIVE — ≤768px
+   ════════════════════════════════════════════ */
+@media(max-width:768px){
+
+  /* ── Topbar ── */
+  .topbar{height:46px;padding:0 10px;gap:8px}
+  .tb-title{font-size:11px;letter-spacing:0}
+  .tb-sub{display:none}
+  .tb-legend{display:none}
+  .lang-sw{display:none}
+  .tb-src{display:none}
+  .share-btn #share-btn-txt{display:none}
+  .share-btn{padding:5px 8px;font-size:13px;border-radius:6px}
+
+  /* ── Map fills between topbar + bottom nav ── */
+  #map{top:46px !important;bottom:54px !important}
+
+  /* ── Bottom nav visible ── */
+  #mob-nav{display:flex}
+
+  /* ── Left panel: slide-in overlay from left ── */
+  .lpanel{
+    top:46px !important;bottom:54px !important;
+    width:min(310px,94vw) !important;
+    transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:2000 !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .lpanel.mob-open{transform:translateX(0) !important}
+
+  /* ── Right panel: slide-in overlay from right ── */
+  .rpanel{
+    top:46px !important;bottom:54px !important;
+    width:min(310px,94vw) !important;
+    transform:translateX(100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:2000 !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .rpanel.mob-open{transform:translateX(0) !important}
+
+  /* ── Bottom timeline strip — above nav bar ── */
+  .bottom-strip{bottom:62px !important}
+
+  /* ── Event card — full width ── */
+  .evcard{
+    left:4vw !important;right:4vw !important;
+    transform:none !important;
+    min-width:0 !important;max-width:92vw !important;
+    top:54px !important;
+  }
+
+  /* ── Leaflet popups ── */
+  .leaflet-popup-content-wrapper{min-width:220px !important;max-width:88vw !important}
+
+  /* ── Stat cards: 2 per row ── */
+  .stats{grid-template-columns:1fr 1fr !important}
+
+  /* ── Share toast above bottom nav ── */
+  #share-toast{bottom:62px !important}
+}
 </style>
 </head>
 <body>
@@ -1979,8 +2077,54 @@ function renderCasChart(){
 renderDailyBrief();
 renderCasChart();
 
+// ════════════════════════════════════════════
+// MOBILE NAVIGATION
+// ════════════════════════════════════════════
+function mobTab(tab){
+  const lp  = document.querySelector('.lpanel');
+  const rp  = document.querySelector('.rpanel');
+  const ov  = document.getElementById('mob-overlay');
+  const tabs= document.querySelectorAll('.mob-tab');
+  tabs.forEach(t=>t.classList.remove('active'));
+  const active=document.querySelector(`.mob-tab[data-tab="${tab}"]`);
+  if(active) active.classList.add('active');
+  if(tab==='map'){
+    lp.classList.remove('mob-open');
+    rp.classList.remove('mob-open');
+    ov.classList.remove('show');
+  } else if(tab==='stats'){
+    lp.classList.add('mob-open');
+    rp.classList.remove('mob-open');
+    ov.classList.add('show');
+  } else if(tab==='news'){
+    rp.classList.add('mob-open');
+    lp.classList.remove('mob-open');
+    ov.classList.add('show');
+  }
+}
+
 </script>
 <div id="share-toast">🔗 Link kopiert!</div>
+
+<!-- Mobile overlay backdrop -->
+<div id="mob-overlay" onclick="mobTab('map')"></div>
+
+<!-- Mobile bottom navigation -->
+<nav id="mob-nav">
+  <button class="mob-tab active" data-tab="map" onclick="mobTab('map')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13M15 7v13"/></svg>
+    MAP
+  </button>
+  <button class="mob-tab" data-tab="stats" onclick="mobTab('stats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+    STATS
+  </button>
+  <button class="mob-tab" data-tab="news" onclick="mobTab('news')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v2"/><path d="M4 22a2 2 0 01-2-2V8a2 2 0 012-2h4"/><line x1="10" y1="9" x2="20" y2="9"/><line x1="10" y1="13" x2="20" y2="13"/><line x1="10" y1="17" x2="20" y2="17"/></svg>
+    NEWS
+  </button>
+</nav>
+
 </body>
 </html>
 
