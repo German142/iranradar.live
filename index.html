@@ -3,7 +3,50 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Iran · Israel · USA — Conflict Map 2024–2026</title>
+<title>Iran Radar – Live Conflict Map Iran · Israel · USA 2024–2026</title>
+<meta name="description" content="Real-time interactive map tracking military operations between Iran, Israel and the USA. Live news, casualty data, weapon statistics and US Navy fleet positions."/>
+<meta name="keywords" content="Iran, Israel, USA, conflict map, military operations, live news, missile attacks, Iran war 2026, Middle East conflict, OSINT"/>
+<meta name="author" content="iranradar.live"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://iranradar.live/"/>
+
+<!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://iranradar.live/"/>
+<meta property="og:title" content="Iran Radar – Live Conflict Map 2024–2026"/>
+<meta property="og:description" content="Real-time interactive map: missile attacks, drone strikes, casualties and live news from the Iran–Israel–USA conflict. Updated continuously."/>
+<meta property="og:image" content="https://iranradar.live/og-preview.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:site_name" content="Iran Radar"/>
+<meta property="og:locale" content="en_US"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:site" content="@iranradar_live"/>
+<meta name="twitter:title" content="Iran Radar – Live Conflict Map 2024–2026"/>
+<meta name="twitter:description" content="Real-time interactive map: missile attacks, drone strikes, casualties and live news from the Iran–Israel–USA conflict."/>
+<meta name="twitter:image" content="https://iranradar.live/og-preview.png"/>
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230a0f1e' stroke='%23f87171' stroke-width='5'/><circle cx='50' cy='50' r='8' fill='%23f87171'/><circle cx='50' cy='50' r='22' fill='none' stroke='%23f87171' stroke-width='2' opacity='0.5'/><circle cx='50' cy='50' r='36' fill='none' stroke='%23f87171' stroke-width='1.5' opacity='0.25'/></svg>"/>
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Iran Radar – Live Conflict Map",
+  "url": "https://iranradar.live",
+  "description": "Real-time interactive map tracking military operations between Iran, Israel and the USA since 2024.",
+  "applicationCategory": "NewsApplication",
+  "operatingSystem": "All",
+  "inLanguage": ["en","de","ar","fa","he"],
+  "author": {"@type": "Organization", "name": "iranradar.live"},
+  "dateModified": "2026-03-22"
+}
+</script>
+
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-3PCPWSD9LL"></script>
 <script>
@@ -408,9 +451,224 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
   /* ── Share toast above bottom nav ── */
   #share-toast{bottom:62px !important}
 }
+
+/* ── LOADING SCREEN ── */
+#loading-screen{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#0a0f1e;z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .6s ease;
+}
+#loading-screen.fade-out{opacity:0;pointer-events:none}
+.loader-logo{position:relative;width:90px;height:90px;margin-bottom:28px}
+.loader-ring{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  border-radius:50%;border-style:solid;border-color:transparent;
+  animation:spin 1.6s linear infinite;
+}
+.loader-ring:nth-child(1){width:80px;height:80px;border-top-color:#f87171;border-width:3px}
+.loader-ring:nth-child(2){width:60px;height:60px;border-right-color:rgba(248,113,113,.4);border-width:2px;animation-duration:2.4s;animation-direction:reverse}
+.loader-dot{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:12px;height:12px;border-radius:50%;background:#f87171;
+  animation:pulse 1.2s ease infinite;
+}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}50%{transform:translate(-50%,-50%) scale(1.4);opacity:.6}}
+.loader-title{font-size:22px;font-weight:800;color:#f1f5f9;letter-spacing:1px;margin-bottom:6px}
+.loader-title span{color:#f87171}
+.loader-sub{font-size:11px;color:#64748b;letter-spacing:.5px;margin-bottom:24px}
+.loader-bar{width:200px;height:3px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.loader-bar-inner{height:100%;width:0;background:linear-gradient(90deg,#f87171,#fbbf24);border-radius:4px;animation:loadbar 2.2s ease forwards}
+@keyframes loadbar{0%{width:0}60%{width:75%}100%{width:100%}}
+
+/* ── SHARE MODAL ── */
+#share-modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  z-index:9998;display:none;align-items:center;justify-content:center;
+}
+#share-modal.open{display:flex}
+.share-modal-box{
+  background:#0d1829;border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:28px;width:360px;max-width:90vw;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.share-modal-title{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.share-modal-close{cursor:pointer;color:#64748b;font-size:18px;line-height:1}
+.share-modal-close:hover{color:#f1f5f9}
+.share-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.share-opt{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+  border:1px solid rgba(255,255,255,.1);transition:all .15s;color:#f1f5f9;
+  background:rgba(255,255,255,.04);
+}
+.share-opt:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+.share-opt-icon{font-size:18px}
+.share-divider{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.embed-box{
+  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;padding:10px;font-size:10px;color:#94a3b8;
+  font-family:monospace;word-break:break-all;line-height:1.5;
+  margin-bottom:10px;cursor:pointer;
+}
+.embed-box:hover{border-color:rgba(255,255,255,.2)}
+.embed-hint{font-size:9px;color:#64748b}
+
+/* ── ABOUT MODAL ── */
+#about-modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  z-index:9998;display:none;align-items:center;justify-content:center;
+}
+#about-modal.open{display:flex}
+.about-modal-box{
+  background:#0d1829;border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:28px;width:420px;max-width:92vw;max-height:80vh;
+  overflow-y:auto;animation:slideUp .25s ease;
+}
+.about-modal-box h2{font-size:16px;font-weight:800;color:#f1f5f9;margin-bottom:4px}
+.about-modal-box .about-sub{font-size:11px;color:#64748b;margin-bottom:18px}
+.about-section{margin-bottom:16px}
+.about-section h3{font-size:11px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.about-source{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.about-source-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.about-source-info strong{font-size:11px;color:#f1f5f9;display:block}
+.about-source-info span{font-size:10px;color:#64748b}
+.about-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.3px;margin-left:5px;vertical-align:middle}
+.badge-live{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+.badge-osint{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+
+/* ── TELEGRAM BUTTON ── */
+.tg-btn{
+  display:flex;align-items:center;gap:5px;padding:4px 11px;
+  background:rgba(0,136,204,.12);border:1px solid rgba(0,136,204,.3);
+  border-radius:6px;color:#38bdf8;font-size:9.5px;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.3px;
+  text-decoration:none;
+}
+.tg-btn:hover{background:rgba(0,136,204,.22);color:#7dd3fc;border-color:rgba(0,136,204,.5)}
+
+/* ── LAST UPDATED BADGE ── */
+.last-updated{
+  font-size:9px;color:#64748b;display:flex;align-items:center;gap:4px;
+  padding:3px 8px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);border-radius:20px;
+}
+.last-updated .upd-dot{width:5px;height:5px;border-radius:50%;background:#34d399;flex-shrink:0}
 </style>
 </head>
 <body>
+
+<!-- ── LOADING SCREEN ── -->
+<div id="loading-screen">
+  <div class="loader-logo">
+    <div class="loader-ring"></div>
+    <div class="loader-ring"></div>
+    <div class="loader-dot"></div>
+  </div>
+  <div class="loader-title">IRAN<span>RADAR</span>.LIVE</div>
+  <div class="loader-sub">LOADING LIVE DATA &amp; MAP</div>
+  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
+</div>
+
+<!-- ── SHARE MODAL ── -->
+<div id="share-modal" onclick="if(event.target===this)closeShareModal()">
+  <div class="share-modal-box">
+    <div class="share-modal-title">
+      Share Iran Radar
+      <span class="share-modal-close" onclick="closeShareModal()">✕</span>
+    </div>
+    <div class="share-btns">
+      <div class="share-opt" onclick="shareTwitter()">
+        <span class="share-opt-icon">𝕏</span><span>Twitter / X</span>
+      </div>
+      <div class="share-opt" onclick="shareWhatsApp()">
+        <span class="share-opt-icon">💬</span><span>WhatsApp</span>
+      </div>
+      <div class="share-opt" onclick="shareTelegram()">
+        <span class="share-opt-icon">✈️</span><span>Telegram</span>
+      </div>
+      <div class="share-opt" onclick="copyLink()">
+        <span class="share-opt-icon">🔗</span><span>Copy Link</span>
+      </div>
+    </div>
+    <div class="share-divider">Embed on your website</div>
+    <div class="embed-box" onclick="copyEmbed()" title="Click to copy">
+      &lt;iframe src="https://iranradar.live" width="100%" height="600" frameborder="0" style="border-radius:10px"&gt;&lt;/iframe&gt;
+    </div>
+    <div class="embed-hint">👆 Click to copy embed code</div>
+  </div>
+</div>
+
+<!-- ── ABOUT MODAL ── -->
+<div id="about-modal" onclick="if(event.target===this)closeAboutModal()">
+  <div class="about-modal-box">
+    <h2>About Iran Radar</h2>
+    <div class="about-sub">Independent open-source conflict monitoring · Not affiliated with any government</div>
+    <div class="about-section">
+      <h3>📡 Live Data Sources</h3>
+      <div class="about-source">
+        <div class="about-source-icon">🌐</div>
+        <div class="about-source-info">
+          <strong>GDELT Project <span class="about-badge badge-live">LIVE</span></strong>
+          <span>Global news database · Updates every 15 min · 100+ languages</span>
+        </div>
+      </div>
+      <div class="about-source">
+        <div class="about-source-icon">📰</div>
+        <div class="about-source-info">
+          <strong>RSS Newsfeeds <span class="about-badge badge-live">LIVE</span></strong>
+          <span>Al Jazeera, Reuters, BBC, Times of Israel, DW, France 24</span>
+        </div>
+      </div>
+      <div class="about-source">
+        <div class="about-source-icon">📺</div>
+        <div class="about-source-info">
+          <strong>DW Live Stream <span class="about-badge badge-live">LIVE</span></strong>
+          <span>Deutsche Welle 24/7 news broadcast</span>
+        </div>
+      </div>
+    </div>
+    <div class="about-section">
+      <h3>🗺️ OSINT & Military Data</h3>
+      <div class="about-source">
+        <div class="about-source-icon">✅</div>
+        <div class="about-source-info">
+          <strong>Verified Strike Data <span class="about-badge badge-osint">OSINT</span></strong>
+          <span>Cross-referenced with Wikipedia, AP, CENTCOM press releases</span>
+        </div>
+      </div>
+      <div class="about-source">
+        <div class="about-source-icon">⚓</div>
+        <div class="about-source-info">
+          <strong>US Navy Fleet Positions</strong>
+          <span>Based on public CENTCOM & NavyTimes reports</span>
+        </div>
+      </div>
+      <div class="about-source">
+        <div class="about-source-icon">💀</div>
+        <div class="about-source-info">
+          <strong>Casualty Estimates</strong>
+          <span>Conservative figures — Al Jazeera, AP, IRNA cross-reference</span>
+        </div>
+      </div>
+    </div>
+    <div class="about-section">
+      <h3>⚠️ Disclaimer</h3>
+      <div style="font-size:10px;color:#64748b;line-height:1.6">
+        This map is for informational and educational purposes only. All data is sourced from public news outlets and OSINT. Casualty numbers are estimates and may differ from official figures. Iran Radar is an independent project and not affiliated with any government, military or media organization.
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;color:#64748b">© 2024–2026 iranradar.live</span>
+      <button onclick="closeAboutModal()" style="padding:6px 16px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);border-radius:6px;color:#f87171;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Close</button>
+    </div>
+  </div>
+</div>
 
 <div class="topbar">
   <div class="tb-left">
@@ -425,9 +683,23 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     <div class="leg"><div class="leg-dot" style="background:var(--israel)"></div><span style="font-size:13px;line-height:1">🇮🇱</span> Israel</div>
     <div class="leg"><div class="leg-dot" style="background:var(--usa)"></div><span style="font-size:13px;line-height:1">🇺🇸</span> USA</div>
     <div class="leg"><div class="leg-dot" style="background:var(--ship)"></div><span style="font-size:12px;line-height:1">⚓</span> US Fleet</div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <button class="share-btn" onclick="shareMap()" title="Link kopieren">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <!-- Last Updated -->
+      <div class="last-updated" id="last-updated-badge">
+        <div class="upd-dot"></div>
+        <span>Updated: <span id="last-upd-time">22 Mar 2026</span></span>
+      </div>
+      <!-- Share Button -->
+      <button class="share-btn" onclick="openShareModal()" title="Share this map">
         <span>🔗</span><span id="share-btn-txt">Share</span>
+      </button>
+      <!-- Telegram -->
+      <a class="tg-btn" href="https://t.me/iranradar_live" target="_blank" rel="noopener" title="Telegram Alerts">
+        <span>✈️</span><span class="tg-btn-txt">Alerts</span>
+      </a>
+      <!-- About -->
+      <button class="share-btn" onclick="openAboutModal()" title="About & Sources" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);color:#60a5fa">
+        <span>ℹ️</span><span class="about-btn-txt">About</span>
       </button>
       <div class="lang-sw">
         <button class="lang-btn active" data-lang="en" onclick="setLang('en',this)">EN</button>
@@ -436,7 +708,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
         <button class="lang-btn" data-lang="fa" onclick="setLang('fa',this)">FA</button>
         <button class="lang-btn" data-lang="he" onclick="setLang('he',this)">HE</button>
       </div>
-      <div class="tb-src">Wikipedia · Al Jazeera · CNN · NPR · USNI · As of: 21 Mar 2026</div>
+      <div class="tb-src">Wikipedia · Al Jazeera · CNN · NPR · USNI</div>
     </div>
   </div>
 </div>
@@ -2371,6 +2643,82 @@ function mobTab(tab){
     ov.classList.add('show');
   }
 }
+
+// ════════════════════════════════════════════
+// LOADING SCREEN
+// ════════════════════════════════════════════
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    const ls = document.getElementById('loading-screen');
+    if (ls) {
+      ls.classList.add('fade-out');
+      setTimeout(() => ls.style.display = 'none', 650);
+    }
+  }, 2400);
+});
+
+// ════════════════════════════════════════════
+// SHARE MODAL
+// ════════════════════════════════════════════
+function openShareModal() {
+  document.getElementById('share-modal').classList.add('open');
+}
+function closeShareModal() {
+  document.getElementById('share-modal').classList.remove('open');
+}
+function shareTwitter() {
+  const text = encodeURIComponent('🚨 Real-time conflict map: Iran · Israel · USA — live news, missile strikes & casualty data');
+  const url = encodeURIComponent('https://iranradar.live');
+  window.open('https://twitter.com/intent/tweet?text='+text+'&url='+url, '_blank');
+}
+function shareWhatsApp() {
+  const text = encodeURIComponent('🗺️ Iran Radar – Live Conflict Map: https://iranradar.live');
+  window.open('https://wa.me/?text='+text, '_blank');
+}
+function shareTelegram() {
+  const text = encodeURIComponent('🗺️ Iran Radar – Live Conflict Map');
+  const url = encodeURIComponent('https://iranradar.live');
+  window.open('https://t.me/share/url?url='+url+'&text='+text, '_blank');
+}
+function copyLink() {
+  const toast = document.getElementById('share-toast');
+  navigator.clipboard.writeText('https://iranradar.live').then(() => {
+    toast.textContent = '🔗 Link kopiert ✓';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  });
+  closeShareModal();
+}
+function copyEmbed() {
+  const code = '<iframe src="https://iranradar.live" width="100%" height="600" frameborder="0" style="border-radius:10px"></iframe>';
+  navigator.clipboard.writeText(code).then(() => {
+    const toast = document.getElementById('share-toast');
+    toast.textContent = '📋 Embed-Code kopiert ✓';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+    closeShareModal();
+  });
+}
+
+// ════════════════════════════════════════════
+// ABOUT MODAL
+// ════════════════════════════════════════════
+function openAboutModal() {
+  document.getElementById('about-modal').classList.add('open');
+}
+function closeAboutModal() {
+  document.getElementById('about-modal').classList.remove('open');
+}
+
+// ════════════════════════════════════════════
+// LAST UPDATED — auto-update timestamp
+// ════════════════════════════════════════════
+(function() {
+  const el = document.getElementById('last-upd-time');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+})();
 
 </script>
 <div id="share-toast">🔗 Link kopiert!</div>
