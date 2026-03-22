@@ -83,6 +83,45 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .sec{border-bottom:1px solid rgba(255,255,255,.06);padding:11px 13px}
 .sec-ttl{font-size:8.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-bottom:9px}
 
+/* ── CASUALTY LIVE TICKER ── */
+.cas-ticker-wrap{
+  overflow:hidden;border-bottom:1px solid rgba(255,255,255,.06);
+  background:rgba(0,0,0,.18);
+  position:relative;height:28px;display:flex;align-items:center;
+}
+.cas-ticker-wrap::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:28px;
+  background:linear-gradient(to right,rgba(4,10,26,.95),transparent);z-index:2;pointer-events:none;
+}
+.cas-ticker-wrap::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:28px;
+  background:linear-gradient(to left,rgba(4,10,26,.95),transparent);z-index:2;pointer-events:none;
+}
+.cas-ticker-track{
+  display:flex;align-items:center;gap:0;
+  white-space:nowrap;
+  animation:casTicker 38s linear infinite;
+}
+.cas-ticker-track:hover{animation-play-state:paused}
+@keyframes casTicker{
+  0%  {transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.cas-item{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:0 14px;border-right:1px solid rgba(255,255,255,.07);
+  font-size:9.5px;font-weight:700;letter-spacing:.3px;
+  white-space:nowrap;
+}
+.cas-flag{font-size:11px;line-height:1}
+.cas-label{color:rgba(255,255,255,.38);font-size:8px;font-weight:600;letter-spacing:.5px}
+.cas-val{font-weight:800}
+.cas-sep{color:rgba(255,255,255,.2);padding:0 4px;font-size:10px}
+.cas-dot{
+  width:5px;height:5px;border-radius:50%;flex-shrink:0;
+  animation:blink 1.4s infinite;
+}
+
 /* ── STAT CARDS ── */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .scard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;transition:background .15s;cursor:default}
@@ -236,6 +275,39 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 </div>
 
 <div class="lpanel">
+
+  <!-- ══ CASUALTY LIVE TICKER ══ -->
+  <div class="cas-ticker-wrap" title="Opferzahlen — hover zum pausieren">
+    <div class="cas-ticker-track" id="cas-track">
+      <!-- Einträge werden 2× dupliziert für nahtloses Scrollen -->
+      <span class="cas-item"><span class="cas-dot" style="background:#f87171"></span><span class="cas-flag">🇮🇷</span><span class="cas-label">IRAN DEATHS</span><span class="cas-val" style="color:#f87171">1.444+</span></span>
+      <span class="cas-item"><span class="cas-flag">🇮🇷</span><span class="cas-label">IRAN INJURED</span><span class="cas-val" style="color:#fca5a5">18.551+</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#60a5fa"></span><span class="cas-flag">🇮🇱</span><span class="cas-label">IL+LB DEATHS</span><span class="cas-val" style="color:#60a5fa">1.037+</span></span>
+      <span class="cas-item"><span class="cas-flag">🇮🇱</span><span class="cas-label">IL INJURED</span><span class="cas-val" style="color:#93c5fd">3.730+</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#fbbf24"></span><span class="cas-flag">🇺🇸</span><span class="cas-label">US KIA</span><span class="cas-val" style="color:#fbbf24">13</span></span>
+      <span class="cas-item"><span class="cas-flag">🇺🇸</span><span class="cas-label">US INJURED</span><span class="cas-val" style="color:#fcd34d">200+</span></span>
+      <span class="cas-item"><span class="cas-flag">🛢️</span><span class="cas-label">OIL PRICE</span><span class="cas-val" style="color:#34d399">$112</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#a78bfa"></span><span class="cas-label">WAR DAY</span><span class="cas-val" style="color:#a78bfa">DAY 22</span></span>
+      <span class="cas-item"><span class="cas-flag">🚀</span><span class="cas-label">IR MISSILES</span><span class="cas-val" style="color:#f87171">2.870+</span></span>
+      <span class="cas-item"><span class="cas-flag">🚁</span><span class="cas-label">IR DRONES</span><span class="cas-val" style="color:#fca5a5">5.400+</span></span>
+      <span class="cas-item"><span class="cas-flag">🎯</span><span class="cas-label">USA+IL STRIKES</span><span class="cas-val" style="color:#fbbf24">7.000+</span></span>
+      <span class="cas-item"><span class="cas-flag">🛡️</span><span class="cas-label">INTERCEPT RATE</span><span class="cas-val" style="color:#34d399">~85%</span></span>
+      <!-- Duplikat für nahtlose Schleife -->
+      <span class="cas-item"><span class="cas-dot" style="background:#f87171"></span><span class="cas-flag">🇮🇷</span><span class="cas-label">IRAN DEATHS</span><span class="cas-val" style="color:#f87171">1.444+</span></span>
+      <span class="cas-item"><span class="cas-flag">🇮🇷</span><span class="cas-label">IRAN INJURED</span><span class="cas-val" style="color:#fca5a5">18.551+</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#60a5fa"></span><span class="cas-flag">🇮🇱</span><span class="cas-label">IL+LB DEATHS</span><span class="cas-val" style="color:#60a5fa">1.037+</span></span>
+      <span class="cas-item"><span class="cas-flag">🇮🇱</span><span class="cas-label">IL INJURED</span><span class="cas-val" style="color:#93c5fd">3.730+</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#fbbf24"></span><span class="cas-flag">🇺🇸</span><span class="cas-label">US KIA</span><span class="cas-val" style="color:#fbbf24">13</span></span>
+      <span class="cas-item"><span class="cas-flag">🇺🇸</span><span class="cas-label">US INJURED</span><span class="cas-val" style="color:#fcd34d">200+</span></span>
+      <span class="cas-item"><span class="cas-flag">🛢️</span><span class="cas-label">OIL PRICE</span><span class="cas-val" style="color:#34d399">$112</span></span>
+      <span class="cas-item"><span class="cas-dot" style="background:#a78bfa"></span><span class="cas-label">WAR DAY</span><span class="cas-val" style="color:#a78bfa">DAY 22</span></span>
+      <span class="cas-item"><span class="cas-flag">🚀</span><span class="cas-label">IR MISSILES</span><span class="cas-val" style="color:#f87171">2.870+</span></span>
+      <span class="cas-item"><span class="cas-flag">🚁</span><span class="cas-label">IR DRONES</span><span class="cas-val" style="color:#fca5a5">5.400+</span></span>
+      <span class="cas-item"><span class="cas-flag">🎯</span><span class="cas-label">USA+IL STRIKES</span><span class="cas-val" style="color:#fbbf24">7.000+</span></span>
+      <span class="cas-item"><span class="cas-flag">🛡️</span><span class="cas-label">INTERCEPT RATE</span><span class="cas-val" style="color:#34d399">~85%</span></span>
+    </div>
+  </div>
+
     <div class="sec">
       <div class="sec-ttl">Overall Statistics</div>
       <div class="stats">
@@ -1584,3 +1656,4 @@ async function runAnimation(){
 </script>
 </body>
 </html>
+
