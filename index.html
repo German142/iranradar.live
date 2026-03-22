@@ -799,7 +799,7 @@ const SHIPS_DATA=[
 window.addEventListener('resize',()=>map.invalidateSize());
 
 const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:13,attribution:'© ESRI Ocean Basemap'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
 L.control.attribution({position:'bottomright',prefix:'© ESRI Ocean Basemap'}).addTo(map);
 setTimeout(()=>map.invalidateSize(),150);
 setTimeout(()=>map.invalidateSize(),500);
@@ -2173,7 +2173,8 @@ function hlsToggleMute() {
   btn.textContent = video.muted ? '🔇 Ton' : '🔊 Stumm';
 }
 
-document.addEventListener('DOMContentLoaded', hlsStart);
+// Start HLS immediately (scripts run after DOM is ready at bottom of body)
+hlsStart();
 
 
 // ════════════════════════════════════════════
