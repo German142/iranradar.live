@@ -1223,7 +1223,7 @@ let feedIsLive=false;
 // Detects if an article is Iran/Israel/USA relevant
 function isRelevant(title='',desc=''){
   const t=(title+' '+desc).toLowerCase();
-  return /iran|israel|irgc|hezbollah|hamas|netanyahu|trump|tehran|hormuz|nuclear|missile|rocket|strike|attack|war|ceasefire|drone|ballistic|airstrike|natanz|fordow|isfahan|mashhad|idf|pentagon|centcom|mossad|pasdaran|revolutionary guard|houthi|shahed|tomahawk|patriot|iron dome|bahrain|qatar|al.udeid|khamenei|khamenei|luftangriff|rakete|atomanlage|nahost|angriff|beschuss|einschlag|drohne/.test(t);
+  return /iran|israel|irgc|hezbollah|hamas|netanyahu|trump|tehran|hormuz|nuclear|missile|rocket|strike|attack|war|ceasefire|drone|ballistic|airstrike|natanz|fordow|isfahan|mashhad|idf|pentagon|centcom|mossad|pasdaran|revolutionary guard|houthi|shahed|tomahawk|patriot|iron dome|bahrain|qatar|al.udeid|khamenei|pezeshkian|rubio|gallant|sinwar|middle east|nahost|hormuz|strait|gulf|angriff|rakete|einschlag|drohne|atomanlage|luftangriff|beschuss/.test(t);
 }
 
 // Format date
@@ -1297,13 +1297,27 @@ const XPOSTS=[
 
 // Source → flag + color
 function srcStyle(domain=''){
-  if(/aljazeera/.test(domain)) return{av:'📡',bg:'#b45309',col:'#fbbf24',lbl:'Al Jazeera'};
-  if(/bbc/.test(domain))       return{av:'🇬🇧',bg:'#1d4ed8',col:'#60a5fa',lbl:'BBC News'};
-  if(/reuters/.test(domain))   return{av:'📰',bg:'#166534',col:'#34d399',lbl:'Reuters'};
-  if(/cnn/.test(domain))       return{av:'📺',bg:'#dc2626',col:'#f87171',lbl:'CNN'};
-  if(/nytimes|nyt/.test(domain))return{av:'📰',bg:'#374151',col:'#9ca3af',lbl:'NY Times'};
-  if(/guardian/.test(domain))  return{av:'🌍',bg:'#0d9488',col:'#2dd4bf',lbl:'Guardian'};
-  if(/apnews|ap\.org/.test(domain))return{av:'📡',bg:'#374151',col:'#94a3b8',lbl:'AP News'};
+  if(/aljazeera/.test(domain))         return{av:'📡',bg:'#b45309',col:'#fbbf24',lbl:'Al Jazeera'};
+  if(/bbc\.co|bbc\.com/.test(domain))  return{av:'🇬🇧',bg:'#1d4ed8',col:'#60a5fa',lbl:'BBC News'};
+  if(/reuters/.test(domain))           return{av:'📰',bg:'#166534',col:'#34d399',lbl:'Reuters'};
+  if(/cnn/.test(domain))               return{av:'📺',bg:'#dc2626',col:'#f87171',lbl:'CNN'};
+  if(/nytimes|nyt\.com/.test(domain))  return{av:'📰',bg:'#374151',col:'#9ca3af',lbl:'NY Times'};
+  if(/guardian/.test(domain))          return{av:'🌍',bg:'#0d9488',col:'#2dd4bf',lbl:'Guardian'};
+  if(/apnews|ap\.org/.test(domain))    return{av:'📡',bg:'#374151',col:'#94a3b8',lbl:'AP News'};
+  if(/timesofisrael/.test(domain))     return{av:'🇮🇱',bg:'#1e3a5f',col:'#60a5fa',lbl:'Times of Israel'};
+  if(/jpost|jerusalem/.test(domain))   return{av:'🇮🇱',bg:'#1a2e4a',col:'#93c5fd',lbl:'Jerusalem Post'};
+  if(/haaretz/.test(domain))           return{av:'🇮🇱',bg:'#1d3557',col:'#7dd3fc',lbl:'Haaretz'};
+  if(/iranintl/.test(domain))          return{av:'🇮🇷',bg:'#14532d',col:'#86efac',lbl:'Iran Intl'};
+  if(/france24/.test(domain))          return{av:'🇫🇷',bg:'#003189',col:'#93c5fd',lbl:'France 24'};
+  if(/dw\.com/.test(domain))           return{av:'🌍',bg:'#3b0764',col:'#c084fc',lbl:'DW News'};
+  if(/axios/.test(domain))             return{av:'📊',bg:'#1c1c1c',col:'#facc15',lbl:'Axios'};
+  if(/politico/.test(domain))          return{av:'📋',bg:'#1c1c1c',col:'#e2e8f0',lbl:'Politico'};
+  if(/nbcnews|nbc\.com/.test(domain))  return{av:'📺',bg:'#1d4ed8',col:'#93c5fd',lbl:'NBC News'};
+  if(/foxnews|fox\.com/.test(domain))  return{av:'📺',bg:'#7c2d12',col:'#fb923c',lbl:'Fox News'};
+  if(/washingtonpost|wapo/.test(domain))return{av:'📰',bg:'#1a1a2e',col:'#a3a3a3',lbl:'Washington Post'};
+  if(/skynews|sky\.com/.test(domain))  return{av:'📡',bg:'#0c4a6e',col:'#38bdf8',lbl:'Sky News'};
+  if(/middleeasteye/.test(domain))     return{av:'👁',bg:'#164e63',col:'#67e8f9',lbl:'Middle East Eye'};
+  if(/ynet|ynetnews/.test(domain))     return{av:'🇮🇱',bg:'#0f172a',col:'#818cf8',lbl:'Ynet'};
   return{av:'📰',bg:'#374151',col:'#94a3b8',lbl:domain.replace('www.','').split('.')[0]};
 }
 
@@ -1466,7 +1480,7 @@ function triggerNewsAttack(item, atk){
   }
 
   // 2) Impact warning marker on map — news-confirmed (stays 12 hrs) + clickable popup
-  addWarnMarker(atk, timeStr, 43200000, true, item);
+  addWarnMarker(atk, timeStr, 600000, true, item);
 
   // 3) Attack alert banner (with real headline as subtitle)
   const el=document.getElementById('attack-alert');
@@ -1517,64 +1531,86 @@ function triggerNewsAttack(item, atk){
 }
 
 // ── RSS feeds as reliable fallback sources ──
+// ── 8 diverse RSS sources — all fetched in parallel ──
 const RSS_FEEDS=[
   'https://www.timesofisrael.com/feed/',
   'https://www.aljazeera.com/xml/rss/all.xml',
   'https://feeds.bbci.co.uk/news/world/rss.xml',
+  'https://www.jpost.com/rss/rssfeedsheadlines.aspx',
+  'https://www.iranintl.com/en/rss.xml',
+  'https://www.france24.com/en/rss',
   'https://rss.dw.com/xml/rss-en-world',
+  'https://www.middleeasteye.net/rss',
 ];
 
-// Main load function — GDELT first, RSS fallback, then cached posts
+// Deduplicate by title (first 80 chars), then limit max 3 articles per domain
+function dedupeAndDiversify(articles, maxPerDomain=3){
+  const seen=new Set();
+  const domainCount={};
+  return articles.filter(a=>{
+    const key=(a.title||'').slice(0,80).toLowerCase();
+    if(seen.has(key)) return false;
+    seen.add(key);
+    const d=a.domain||'unknown';
+    domainCount[d]=(domainCount[d]||0)+1;
+    return domainCount[d]<=maxPerDomain;
+  });
+}
+
+// Main load function — GDELT + all RSS sources in parallel, always
 async function loadLiveNews(manual=false){
   if(manual){
     const feed=document.getElementById('xfeed');
-    feed.innerHTML=`<div style="padding:18px;text-align:center;font-size:10px;color:var(--sub)"><div style="font-size:18px;margin-bottom:6px;animation:warnBounce 1s infinite">📡</div>Connecting to news sources…</div>`;
+    feed.innerHTML=`<div style="padding:18px;text-align:center;font-size:10px;color:var(--sub)"><div style="font-size:18px;margin-bottom:6px;animation:warnBounce 1s infinite">📡</div>Connecting to ${RSS_FEEDS.length+1} sources…</div>`;
     setFeedStatus(false,'LOADING…');
   }
 
+  // ── Fire GDELT + ALL RSS feeds simultaneously ──
+  const gdeltQuery='iran OR israel OR irgc OR trump OR netanyahu OR khamenei war attack strike missile 2026';
+  const [gdeltResult,...rssResults]=await Promise.allSettled([
+    fetchGDELT(gdeltQuery,'7d'),
+    ...RSS_FEEDS.map(url=>fetchRSS(url))
+  ]);
+
   let articles=[];
 
-  // ── Step 1: GDELT — one query at a time, wait if rate-limited ──
-  const GDELT_QUERIES=[
-    {q:'iran israel war 2026 attack strike missile',span:'7d'},
-    {q:'iran nuclear strike airstrike usa military',  span:'14d'},
-    {q:'iran israel conflict 2026',                   span:'30d'},
-  ];
-  for(const {q,span} of GDELT_QUERIES){
-    try{
-      const items=await fetchGDELT(q,span);
-      const newItems=items.filter(i=>!articles.some(a=>a.title===i.title));
+  // Collect GDELT results
+  if(gdeltResult.status==='fulfilled'){
+    articles=[...gdeltResult.value];
+    console.log('✅ GDELT:',gdeltResult.value.length,'articles');
+  } else {
+    console.warn('⚠ GDELT failed:',gdeltResult.reason?.message);
+  }
+
+  // Collect RSS results — add all that pass relevancy filter
+  let rssSuccessCount=0;
+  for(let i=0;i<rssResults.length;i++){
+    if(rssResults[i].status==='fulfilled'){
+      rssSuccessCount++;
+      const newItems=rssResults[i].value.filter(a=>!articles.some(b=>b.title===a.title));
       articles=[...articles,...newItems];
-      console.log('✅ GDELT "'+q+'":',newItems.length,'new articles (total:',articles.length+')');
-      if(articles.length>=12) break;
-    }catch(e){
-      console.warn('⚠ GDELT "'+q+'" failed:',e.message);
-      if(e.message.includes('429')){
-        console.log('⏳ GDELT rate-limited — waiting 6s before next query…');
-        await new Promise(r=>setTimeout(r,6000));
-      }
+      console.log('✅ RSS',RSS_FEEDS[i].split('/')[2],':',rssResults[i].value.length,'articles');
+    } else {
+      console.warn('⚠ RSS failed:',RSS_FEEDS[i].split('/')[2]);
     }
   }
 
-  // ── Step 2: RSS fallback if GDELT returned fewer than 6 articles ──
-  if(articles.length<6){
-    console.log('📡 Trying RSS feeds…');
-    for(const rssUrl of RSS_FEEDS){
-      try{
-        const items=await fetchRSS(rssUrl);
-        const newItems=items.filter(i=>!articles.some(a=>a.title===i.title));
-        articles=[...articles,...newItems];
-        console.log('✅ RSS',rssUrl,':',newItems.length,'new articles (total:',articles.length+')');
-        if(articles.length>=12) break;
-      }catch(e){ console.warn('⚠ RSS failed:',rssUrl,e.message); }
-    }
+  // ── If GDELT hit rate limit and RSS also failed, retry GDELT once after 6s ──
+  if(articles.length<4 && gdeltResult.status==='rejected' && gdeltResult.reason?.message?.includes('429')){
+    console.log('⏳ Rate-limited — retrying GDELT in 6s…');
+    await new Promise(r=>setTimeout(r,6000));
+    try{
+      const items=await fetchGDELT('iran israel war attack 2026','14d');
+      articles=[...articles,...items.filter(a=>!articles.some(b=>b.title===a.title))];
+    }catch(e){ console.warn('⚠ GDELT retry failed:',e.message); }
   }
 
   if(articles.length>0){
-    liveNewsCache=articles.slice(0,15);
+    // Deduplicate + source diversity (max 3 per domain) + cap at 20
+    liveNewsCache=dedupeAndDiversify(articles,3).slice(0,20);
     feedIsLive=true;
 
-    const newCount=liveNewsCache.length-lastLiveCount;
+    const newCount=Math.max(0,liveNewsCache.length-lastLiveCount);
     const isFirst=(lastLiveCount===0);
     lastLiveCount=liveNewsCache.length;
 
@@ -1594,7 +1630,7 @@ async function loadLiveNews(manual=false){
         text:newest.title,
         likes:'–',rt:'–',
         src:'🔴 LIVE · '+s.lbl,
-        flag:/aljazeera|reuters/.test(newest.domain||'')?'iran':'israel',
+        flag:/aljazeera|iranintl|middleeasteye/.test(newest.domain||'')?'iran':/timesofisrael|jpost|haaretz/.test(newest.domain||'')?'israel':'usa',
         isLive:true
       });
       let attackDelay=1200;
@@ -1606,14 +1642,14 @@ async function loadLiveNews(manual=false){
         }
       });
     } else if(isFirst){
-      // First load: place confirmed strike markers — stay visible for 12 hours
+      // First load: show confirmed strike markers for 10 minutes
       let markerDelay=1500;
       liveNewsCache.forEach(article=>{
         const detectedAtk=detectAttackFromHeadline(article.title);
         if(detectedAtk){
           const now=new Date();
           const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-          setTimeout(()=>addWarnMarker(detectedAtk,t,43200000,true,article), markerDelay);
+          setTimeout(()=>addWarnMarker(detectedAtk,t,600000,true,article), markerDelay);
           markerDelay+=600;
         }
       });
