@@ -14,6 +14,7 @@
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -282,23 +283,29 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .xpost-act{font-size:8.5px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:3px}
 .xnew{animation:xslide .4s ease}
 @keyframes xslide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-/* ── Live TV Cards ── */
-.live-tv-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px}
-.live-tv-card{
-  display:flex;flex-direction:column;gap:5px;padding:10px 11px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  border-radius:9px;cursor:pointer;text-decoration:none;
-  transition:all .18s;-webkit-tap-highlight-color:transparent;
-}
-.live-tv-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
-.ltv-top{display:flex;align-items:center;justify-content:space-between}
-.ltv-flag{font-size:18px;line-height:1}
-.ltv-live{display:flex;align-items:center;gap:3px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.35);border-radius:4px;padding:2px 5px}
-.ltv-dot{width:5px;height:5px;border-radius:50%;background:#f87171;animation:blink 1.2s infinite;flex-shrink:0}
-.ltv-live-txt{font-size:7.5px;font-weight:800;color:#f87171;letter-spacing:.5px}
-.ltv-name{font-size:10px;font-weight:700;color:#f1f5f9;line-height:1.2}
-.ltv-lang{font-size:8px;color:rgba(255,255,255,.35);font-weight:500}
-.ltv-arrow{font-size:9px;color:rgba(255,255,255,.25);align-self:flex-end}
+/* ── HLS Live Player ── */
+.hls-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:9px;overflow:hidden;background:#050c20;border:1px solid rgba(255,255,255,.1)}
+.hls-wrap video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.hls-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(5,12,32,.85);transition:opacity .3s}
+.hls-overlay.hidden{opacity:0;pointer-events:none}
+.hls-spinner{width:28px;height:28px;border:3px solid rgba(255,255,255,.1);border-top-color:#22d3ee;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hls-err{display:none;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 16px}
+.hls-err-ico{font-size:22px}
+.hls-err-txt{font-size:9.5px;color:rgba(255,255,255,.5);line-height:1.5}
+.hls-mute-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:4px 10px;font-size:9px;font-weight:700;color:#f1f5f9;cursor:pointer;z-index:5;backdrop-filter:blur(6px);-webkit-tap-highlight-color:transparent}
+.hls-ch-sw{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.hls-ch-btn{flex:1;min-width:0;padding:5px 4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:rgba(255,255,255,.45);font-size:8.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hls-ch-btn:hover{background:rgba(255,255,255,.1);color:#f1f5f9}
+.hls-ch-btn.active{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.45);color:#f87171}
+/* ── Live TV link cards (fallback row) ── */
+.live-tv-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.live-tv-card{display:flex;align-items:center;gap:7px;padding:7px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:7px;cursor:pointer;text-decoration:none;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.live-tv-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.18)}
+.ltv-flag{font-size:15px;flex-shrink:0}
+.ltv-info{min-width:0}
+.ltv-name{font-size:9.5px;font-weight:700;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ltv-lang{font-size:7.5px;color:rgba(255,255,255,.3)}
 
 /* ════════════════════════════════════════════
    MOBILE NAV BAR (always in DOM, hidden on desktop)
@@ -495,49 +502,46 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       </div>
     </div>
 
-    <!-- ══ LIVE TV ══ -->
+    <!-- ══ LIVE TV (HLS Player + Link Fallback) ══ -->
     <div class="sec" style="padding-bottom:12px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:9px">
         <div class="live-dot" style="background:#f87171"></div>
         <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE TV</span>
-        <span style="font-size:8px;color:rgba(255,255,255,.3)">— öffnet in neuem Tab</span>
+        <span id="hls-status" style="font-size:7.5px;color:rgba(255,255,255,.3)">— lädt…</span>
       </div>
+      <!-- Channel switcher -->
+      <div class="hls-ch-sw" id="hls-sw">
+        <button class="hls-ch-btn active" onclick="hlsLoad('f24',this)">🇫🇷 France 24</button>
+        <button class="hls-ch-btn" onclick="hlsLoad('dw',this)">🇩🇪 DW News</button>
+        <button class="hls-ch-btn" onclick="hlsLoad('aje',this)">🇶🇦 Al Jazeera</button>
+        <button class="hls-ch-btn" onclick="hlsLoad('ara',this)">🇸🇦 العربية</button>
+      </div>
+      <!-- HLS video player -->
+      <div class="hls-wrap" id="hls-wrap">
+        <video id="hls-video" playsinline muted autoplay></video>
+        <div class="hls-overlay" id="hls-ov">
+          <div class="hls-spinner" id="hls-spin"></div>
+          <div class="hls-err" id="hls-err">
+            <div class="hls-err-ico">📡</div>
+            <div class="hls-err-txt" id="hls-err-txt">Stream nicht verfügbar<br>Sender-Link unten ↓</div>
+          </div>
+        </div>
+        <button class="hls-mute-btn" id="hls-mute" onclick="hlsToggleMute()">🔇 Ton</button>
+      </div>
+      <!-- Fallback: direct links -->
+      <div style="font-size:8px;color:rgba(255,255,255,.25);margin:6px 0 4px;text-align:center">Direktlinks → öffnet YouTube</div>
       <div class="live-tv-grid">
-        <a class="live-tv-card" href="https://www.youtube.com/@DWNews/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇩🇪</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">DW News</div>
-          <div class="ltv-lang">English</div>
-          <div class="ltv-arrow">↗ YouTube</div>
-        </a>
         <a class="live-tv-card" href="https://www.youtube.com/@France24_en/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇫🇷</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">France 24</div>
-          <div class="ltv-lang">English</div>
-          <div class="ltv-arrow">↗ YouTube</div>
+          <span class="ltv-flag">🇫🇷</span><div class="ltv-info"><div class="ltv-name">France 24</div><div class="ltv-lang">English ↗</div></div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@DWNews/live" target="_blank" rel="noopener">
+          <span class="ltv-flag">🇩🇪</span><div class="ltv-info"><div class="ltv-name">DW News</div><div class="ltv-lang">English ↗</div></div>
         </a>
         <a class="live-tv-card" href="https://www.youtube.com/@AlJazeeraEnglish/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇶🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">Al Jazeera</div>
-          <div class="ltv-lang">English</div>
-          <div class="ltv-arrow">↗ YouTube</div>
+          <span class="ltv-flag">🇶🇦</span><div class="ltv-info"><div class="ltv-name">Al Jazeera</div><div class="ltv-lang">English ↗</div></div>
         </a>
         <a class="live-tv-card" href="https://www.youtube.com/@alarabiya/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇸🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">العربية</div>
-          <div class="ltv-lang">عربي · Arabic</div>
-          <div class="ltv-arrow">↗ YouTube</div>
-        </a>
-        <a class="live-tv-card" href="https://www.youtube.com/@BBCNews/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇬🇧</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">BBC News</div>
-          <div class="ltv-lang">English</div>
-          <div class="ltv-arrow">↗ YouTube</div>
-        </a>
-        <a class="live-tv-card" href="https://www.youtube.com/@AlJazeeraArabic/live" target="_blank" rel="noopener">
-          <div class="ltv-top"><span class="ltv-flag">🇶🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
-          <div class="ltv-name">الجزيرة</div>
-          <div class="ltv-lang">عربي · Arabic</div>
-          <div class="ltv-arrow">↗ YouTube</div>
+          <span class="ltv-flag">🇸🇦</span><div class="ltv-info"><div class="ltv-name">العربية</div><div class="ltv-lang">عربي ↗</div></div>
         </a>
       </div>
     </div>
@@ -2107,6 +2111,86 @@ renderDailyBrief();
 renderCasChart();
 
 // ════════════════════════════════════════════
+
+// ════════════════════════════════════════════
+// HLS LIVE PLAYER
+// ════════════════════════════════════════════
+const HLS_STREAMS = {
+  f24: { url:'https://stream.france24.com/hls/live/2037793/F24_EN_HI_HLS/master.m3u8', name:'France 24 EN' },
+  dw:  { url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8', name:'DW News' },
+  aje: { url:'https://live-hls-web-aje.getstreaming.io/hls/stream4.m3u8', name:'Al Jazeera EN' },
+  ara: { url:'https://live-hls-web-alarabia.getstreaming.io/hls/stream1.m3u8', name:'Al Arabiya' }
+};
+let hlsInstance = null;
+
+function hlsLoad(ch, btn) {
+  const stream = HLS_STREAMS[ch];
+  if (!stream) return;
+  const video   = document.getElementById('hls-video');
+  const overlay = document.getElementById('hls-ov');
+  const spinner = document.getElementById('hls-spin');
+  const errBox  = document.getElementById('hls-err');
+  const errTxt  = document.getElementById('hls-err-txt');
+  const status  = document.getElementById('hls-status');
+
+  // Update buttons
+  document.querySelectorAll('.hls-ch-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Reset UI
+  overlay.classList.remove('hidden');
+  spinner.style.display = 'block';
+  errBox.style.display  = 'none';
+  if (status) status.textContent = '— lädt ' + stream.name + '…';
+
+  // Destroy old hls instance
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls({ lowLatencyMode: true, maxBufferLength: 10 });
+    hlsInstance.loadSource(stream.url);
+    hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play().catch(() => {});
+      overlay.classList.add('hidden');
+      if (status) status.textContent = '🔴 ' + stream.name + ' — stumm';
+    });
+    hlsInstance.on(Hls.Events.ERROR, (e, data) => {
+      if (data.fatal) {
+        spinner.style.display = 'none';
+        errBox.style.display  = 'flex';
+        errTxt.innerHTML = `${stream.name}<br>Stream nicht verfügbar<br><small style="color:rgba(255,255,255,.25)">CORS oder Sender offline</small>`;
+        if (status) status.textContent = '— nicht verfügbar';
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Safari native HLS
+    video.src = stream.url;
+    video.addEventListener('loadedmetadata', () => {
+      video.play().catch(() => {});
+      overlay.classList.add('hidden');
+      if (status) status.textContent = '🔴 ' + stream.name;
+    }, { once: true });
+  } else {
+    errTxt.innerHTML = 'HLS nicht unterstützt<br>Direktlink unten ↓';
+    spinner.style.display = 'none';
+    errBox.style.display  = 'flex';
+  }
+}
+
+function hlsToggleMute() {
+  const video = document.getElementById('hls-video');
+  const btn   = document.getElementById('hls-mute');
+  if (!video) return;
+  video.muted = !video.muted;
+  btn.textContent = video.muted ? '🔇 Ton' : '🔊 Stumm';
+}
+
+// Auto-start on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const firstBtn = document.querySelector('.hls-ch-btn');
+  hlsLoad('f24', firstBtn);
+});
 
 // ════════════════════════════════════════════
 // MOBILE NAVIGATION
