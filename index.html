@@ -282,25 +282,23 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .xpost-act{font-size:8.5px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:3px}
 .xnew{animation:xslide .4s ease}
 @keyframes xslide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-/* ── YouTube Live ── */
-.yt-wrap{position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.08)}
-.yt-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%}
-#yt-unmute{
-  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:6px;
-  background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.2);
-  border-radius:20px;padding:5px 14px;cursor:pointer;
-  font-size:10px;font-weight:700;color:#f1f5f9;
-  backdrop-filter:blur(6px);z-index:10;
-  transition:all .2s;white-space:nowrap;
-  animation:ytpulse 2s ease-in-out infinite;
+/* ── Live TV Cards ── */
+.live-tv-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px}
+.live-tv-card{
+  display:flex;flex-direction:column;gap:5px;padding:10px 11px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:9px;cursor:pointer;text-decoration:none;
+  transition:all .18s;-webkit-tap-highlight-color:transparent;
 }
-#yt-unmute:hover{background:rgba(34,211,153,.2);border-color:rgba(34,211,153,.5);color:#34d399}
-#yt-unmute.hidden{display:none}
-@keyframes ytpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.15)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
-.yt-ch-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;color:rgba(255,255,255,.5);font-size:8.5px;font-weight:700;padding:3px 7px;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:.3px}
-.yt-ch-btn:hover{background:rgba(255,255,255,.12);color:#f1f5f9}
-.yt-ch-btn.active{background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.5);color:#f87171}
+.live-tv-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2);transform:translateY(-1px)}
+.ltv-top{display:flex;align-items:center;justify-content:space-between}
+.ltv-flag{font-size:18px;line-height:1}
+.ltv-live{display:flex;align-items:center;gap:3px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.35);border-radius:4px;padding:2px 5px}
+.ltv-dot{width:5px;height:5px;border-radius:50%;background:#f87171;animation:blink 1.2s infinite;flex-shrink:0}
+.ltv-live-txt{font-size:7.5px;font-weight:800;color:#f87171;letter-spacing:.5px}
+.ltv-name{font-size:10px;font-weight:700;color:#f1f5f9;line-height:1.2}
+.ltv-lang{font-size:8px;color:rgba(255,255,255,.35);font-weight:500}
+.ltv-arrow{font-size:9px;color:rgba(255,255,255,.25);align-self:flex-end}
 
 /* ════════════════════════════════════════════
    MOBILE NAV BAR (always in DOM, hidden on desktop)
@@ -497,31 +495,51 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       </div>
     </div>
 
-    <!-- ══ YOUTUBE LIVE STREAM ══ -->
+    <!-- ══ LIVE TV ══ -->
     <div class="sec" style="padding-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="live-dot" style="background:#f87171"></div>
-          <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE STREAM</span>
-        </div>
-        <div style="display:flex;gap:4px" id="yt-sw">
-          <button class="yt-ch-btn active" onclick="switchYT('dw',this)" title="DW News">DW</button>
-          <button class="yt-ch-btn" onclick="switchYT('f24',this)" title="France 24 English">F24</button>
-          <button class="yt-ch-btn" onclick="switchYT('aja',this)" title="Al Jazeera Arabic">الجزيرة</button>
-        </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <div class="live-dot" style="background:#f87171"></div>
+        <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE TV</span>
+        <span style="font-size:8px;color:rgba(255,255,255,.3)">— öffnet in neuem Tab</span>
       </div>
-      <div class="yt-wrap">
-        <iframe id="yt-frame"
-          src="https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg&autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen frameborder="0"></iframe>
-        <!-- Unmute overlay — verschwindet nach Klick -->
-        <div id="yt-unmute" onclick="ytUnmute()" title="Ton einschalten">
-          <span id="yt-unmute-icon">🔇</span>
-          <span id="yt-unmute-txt">Ton einschalten</span>
-        </div>
+      <div class="live-tv-grid">
+        <a class="live-tv-card" href="https://www.youtube.com/@DWNews/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇩🇪</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">DW News</div>
+          <div class="ltv-lang">English</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@France24_en/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇫🇷</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">France 24</div>
+          <div class="ltv-lang">English</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@AlJazeeraEnglish/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇶🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">Al Jazeera</div>
+          <div class="ltv-lang">English</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@alarabiya/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇸🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">العربية</div>
+          <div class="ltv-lang">عربي · Arabic</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@BBCNews/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇬🇧</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">BBC News</div>
+          <div class="ltv-lang">English</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
+        <a class="live-tv-card" href="https://www.youtube.com/@AlJazeeraArabic/live" target="_blank" rel="noopener">
+          <div class="ltv-top"><span class="ltv-flag">🇶🇦</span><span class="ltv-live"><span class="ltv-dot"></span><span class="ltv-live-txt">LIVE</span></span></div>
+          <div class="ltv-name">الجزيرة</div>
+          <div class="ltv-lang">عربي · Arabic</div>
+          <div class="ltv-arrow">↗ YouTube</div>
+        </a>
       </div>
-      <div id="yt-label" style="font-size:8px;color:rgba(255,255,255,.25);margin-top:5px;text-align:center">DW News · Live 24/7 — stumm gestartet</div>
     </div>
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
     <div class="tl" id="tl"></div>
@@ -2089,46 +2107,6 @@ renderDailyBrief();
 renderCasChart();
 
 // ════════════════════════════════════════════
-// YOUTUBE CHANNEL SWITCHER
-// ════════════════════════════════════════════
-// channel= Methode: stabiler als Video-IDs, nutzt den aktiven Live-Stream des Kanals
-const YT_CHANNELS={
-  dw: {ch:'UCknLrEdhRCp1aegoMqRaCZg', label:'DW News · Live 24/7 — stumm gestartet'},
-  f24:{ch:'UCQfwfsi5VrQ8yKL-UpRNNOA', label:'France 24 English · Live — stumm gestartet'},
-  aja:{ch:'UCNye-wNBqNL5ZzHSJdpkiXA', label:'Al Jazeera Arabic · بث مباشر — stumm gestartet'}
-};
-function switchYT(ch, btn){
-  const frame=document.getElementById('yt-frame');
-  const label=document.getElementById('yt-label');
-  const unmute=document.getElementById('yt-unmute');
-  if(!frame) return;
-  const c=YT_CHANNELS[ch];
-  frame.src=`https://www.youtube.com/embed/live_stream?channel=${c.ch}&autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1`;
-  if(label) label.textContent=c.label+' — stumm gestartet';
-  if(unmute){ unmute.classList.remove('hidden'); document.getElementById('yt-unmute-icon').textContent='🔇'; document.getElementById('yt-unmute-txt').textContent='Ton einschalten'; }
-  document.querySelectorAll('.yt-ch-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-}
-let ytMuted=true;
-function ytUnmute(){
-  const frame=document.getElementById('yt-frame');
-  const btn=document.getElementById('yt-unmute');
-  const icon=document.getElementById('yt-unmute-icon');
-  const txt=document.getElementById('yt-unmute-txt');
-  if(!frame) return;
-  const url=new URL(frame.src);
-  if(ytMuted){
-    url.searchParams.set('mute','0');
-    frame.src=url.toString();
-    icon.textContent='🔊'; txt.textContent='Stumm';
-    ytMuted=false;
-  } else {
-    url.searchParams.set('mute','1');
-    frame.src=url.toString();
-    icon.textContent='🔇'; txt.textContent='Ton einschalten';
-    ytMuted=true;
-  }
-}
 
 // ════════════════════════════════════════════
 // MOBILE NAVIGATION
