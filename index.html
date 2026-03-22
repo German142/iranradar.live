@@ -799,7 +799,7 @@ const SHIPS_DATA=[
 window.addEventListener('resize',()=>map.invalidateSize());
 
 const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
 L.control.attribution({position:'bottomright',prefix:'© ESRI Ocean Basemap'}).addTo(map);
 setTimeout(()=>map.invalidateSize(),150);
 setTimeout(()=>map.invalidateSize(),500);
@@ -1865,7 +1865,9 @@ function showXToast(post){
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
           <span style="font-size:11.5px;font-weight:800;color:#f1f5f9">${post.name}</span>
           ${post.verified?`<span style="color:#1d9bf0;font-size:11px">✓</span>`:''}
-          <span style="font-size:9px;color:var(--sub)">${post.handle}</span>
+          ${post.handle && post.handle.startsWith('@')
+            ? `<a href="https://x.com/${post.handle.slice(1)}" target="_blank" rel="noopener" style="font-size:9px;color:#1d9bf0;text-decoration:none;font-weight:600" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${post.handle}</a>`
+            : `<span style="font-size:9px;color:var(--sub)">${post.handle}</span>`}
           <span class="toast-breaking" style="margin-left:auto">⚡ BREAKING</span>
         </div>
         <div style="font-size:11px;color:#e2e8f0;line-height:1.55;margin-bottom:7px">${shortText}</div>
@@ -1881,7 +1883,7 @@ function showXToast(post){
     </div>
   `;
   clearTimeout(window._toastTimer);
-  window._toastTimer=setTimeout(()=>clearXToast(),6500);
+  window._toastTimer=setTimeout(()=>clearXToast(),12000);
 }
 function clearXToast(){
   const toast=document.getElementById('x-toast');
