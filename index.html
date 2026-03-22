@@ -483,17 +483,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
         <div class="scard g"><div class="sval">~85%</div><div class="slbl">Intercept Rate IL</div></div>
       </div>
     </div>
-    <div class="cas-chart-wrap">
-      <div class="cas-chart-top">
-        <span class="sec-ttl" style="margin-bottom:0" id="ttl-chart">CASUALTIES BY PHASE</span>
-        <div class="cas-chart-legend">
-          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#f87171"></span>Iran</span>
-          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#60a5fa"></span>Israel</span>
-          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#fbbf24"></span>USA</span>
-        </div>
-      </div>
-      <div id="cas-chart-svg"></div>
-    </div>
 
     <!-- ══ YOUTUBE LIVE STREAM ══ -->
     <div class="sec" style="padding-bottom:12px">
@@ -503,18 +492,18 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
           <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px">LIVE STREAM</span>
         </div>
         <div style="display:flex;gap:4px" id="yt-sw">
-          <button class="yt-ch-btn active" onclick="switchYT('aj',this)" title="Al Jazeera English">AJ</button>
-          <button class="yt-ch-btn" onclick="switchYT('dw',this)" title="DW News">DW</button>
-          <button class="yt-ch-btn" onclick="switchYT('f24',this)" title="France 24">F24</button>
+          <button class="yt-ch-btn active" onclick="switchYT('sky',this)" title="Sky News">SKY</button>
+          <button class="yt-ch-btn" onclick="switchYT('aj',this)" title="Al Jazeera English">AJ</button>
+          <button class="yt-ch-btn" onclick="switchYT('i24',this)" title="i24 News English">i24</button>
         </div>
       </div>
       <div class="yt-wrap">
         <iframe id="yt-frame"
-          src="https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJdpkiXA&autoplay=0&modestbranding=1&rel=0"
+          src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen frameborder="0" loading="lazy"></iframe>
+          allowfullscreen frameborder="0"></iframe>
       </div>
-      <div style="font-size:8px;color:rgba(255,255,255,.25);margin-top:5px;text-align:center">Al Jazeera English · Live 24/7</div>
+      <div id="yt-label" style="font-size:8px;color:rgba(255,255,255,.25);margin-top:5px;text-align:center">Sky News · Live 24/7 🔇 Ton per Klick</div>
     </div>
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
     <div class="tl" id="tl"></div>
@@ -2085,16 +2074,17 @@ renderCasChart();
 // YOUTUBE CHANNEL SWITCHER
 // ════════════════════════════════════════════
 const YT_CHANNELS={
-  aj:{src:'https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJdpkiXA&autoplay=0&modestbranding=1&rel=0', label:'Al Jazeera English · Live 24/7'},
-  dw:{src:'https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg&autoplay=0&modestbranding=1&rel=0', label:'DW News · Live 24/7'},
-  f24:{src:'https://www.youtube.com/embed/live_stream?channel=UCQfwfsi5VrQ8yKL-UpRNNOA&autoplay=0&modestbranding=1&rel=0', label:'France 24 English · Live 24/7'}
+  sky:{id:'9Auq9mYxFEE', label:'Sky News · Live 24/7 🔇 Ton per Klick'},
+  aj: {id:'h3MuIUNCCLI', label:'Al Jazeera English · Live 24/7 🔇 Ton per Klick'},
+  i24:{id:'wg_kSVnFpnA', label:'i24 News English · Live 24/7 🔇 Ton per Klick'}
 };
 function switchYT(ch, btn){
   const frame=document.getElementById('yt-frame');
-  const info=frame?.nextElementSibling;
+  const label=document.getElementById('yt-label');
   if(!frame) return;
-  frame.src=YT_CHANNELS[ch].src;
-  if(info) info.textContent=YT_CHANNELS[ch].label;
+  const c=YT_CHANNELS[ch];
+  frame.src=`https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&modestbranding=1&rel=0&playsinline=1`;
+  if(label) label.textContent=c.label;
   document.querySelectorAll('.yt-ch-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
 }
