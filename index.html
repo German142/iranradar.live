@@ -1453,6 +1453,22 @@ function shipSVG(type){
   }
 }
 
+// ── CARRIER / AIRBASE LOOKUP SETS (must be before placeMarkers) ──
+const CARRIER_LOCS   = new Set(['ford','truman','lincoln','roosevelt','ike']);
+const AIRBASE_LOCS   = new Set(['udeid','nevatim','tanf','ainasad','bahrain']);
+const CARRIER_NAMES  = {
+  ford:'USS Gerald R. Ford',truman:'USS Harry S. Truman',
+  lincoln:'USS Abraham Lincoln',roosevelt:'USS Theodore Roosevelt',ike:'USS Eisenhower'
+};
+const AIRBASE_NAMES  = {
+  udeid:'Al Udeid AB',nevatim:'Nevatim AFB',tanf:'At-Tanf Base',
+  ainasad:'Ain Al-Assad AB',bahrain:'5th Fleet Bahrain'
+};
+const CARRIER_MARKERS = {};
+
+// Replay phase tracking
+let currentPhase = 'all';
+
 function placeMarkers(){
   Object.entries(LOC).forEach(([k,loc])=>{
     const ship = loc.t==='carrier'||loc.t==='destroyer';
@@ -3031,21 +3047,8 @@ function mobTab(tab){
 // ════════════════════════════════════════════
 // CARRIER LAUNCH SIMULATION
 // ════════════════════════════════════════════
-
-// Which LOC keys are carriers or airbases (for launch simulation)
-const CARRIER_LOCS   = new Set(['ford','truman','lincoln','roosevelt','ike']);
-const AIRBASE_LOCS   = new Set(['udeid','nevatim','tanf','ainAlAsad','bahrain']);
-const CARRIER_NAMES  = {
-  ford:'USS Gerald R. Ford',truman:'USS Harry S. Truman',
-  lincoln:'USS Abraham Lincoln',roosevelt:'USS Theodore Roosevelt',ike:'USS Eisenhower'
-};
-const AIRBASE_NAMES  = {
-  udeid:'Al Udeid AB',nevatim:'Nevatim AFB',tanf:'At-Tanf Base',
-  ainAlAsad:'Ain Al-Assad AB',bahrain:'5th Fleet Bahrain'
-};
-
-// Carrier marker registry — so we can flash them
-const CARRIER_MARKERS = {};
+// (CARRIER_LOCS, AIRBASE_LOCS, CARRIER_NAMES, AIRBASE_NAMES, CARRIER_MARKERS
+//  are declared earlier, before placeMarkers(), to avoid temporal dead zone)
 
 function registerCarrierMarker(locKey, leafletMarker){
   CARRIER_MARKERS[locKey] = leafletMarker;
@@ -3687,20 +3690,7 @@ function triggerNewsAttackWithNotif(article, atk){
     article.url
   );
 }
-// Override triggerNewsAttack
-if(typeof triggerNewsAttack !== 'undefined'){
-  const orig = triggerNewsAttack;
-  triggerNewsAttack = function(article, atk){
-    orig(article, atk);
-    const attacker = atk?.attacker||'';
-    const flag = attacker==='iran'?'🇮🇷':attacker==='israel'?'🇮🇱':'🇺🇸';
-    sendStrikeNotification(
-      `🚨 ${flag} New Strike Detected — Iran Radar`,
-      article.title,
-      article.url
-    );
-  };
-}
+// (Notification hook is handled by triggerNewsAttackWithNotif above — no second override needed)
 
 // Also notify on new live news articles (non-strike)
 function notifyNewArticle(article){
