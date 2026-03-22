@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -185,6 +186,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 .tli-desc{font-size:9.5px;color:var(--sub);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tli-tag{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;flex-shrink:0;margin-top:2px;align-self:flex-start}
 
+/* ── FLAT MAP COUNTRY TOOLTIP ── */
+.leaflet-tooltip-country{background:rgba(8,14,32,.9);border:1px solid rgba(255,255,255,.15);color:#e2e8f0;font-size:8.5px;font-weight:700;padding:2px 8px;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.5);letter-spacing:.3px;pointer-events:none}
+.leaflet-tooltip-country::before{display:none}
 /* ── POPUPS ── */
 .leaflet-popup-content-wrapper{background:rgba(5,12,32,.96);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--text);box-shadow:0 8px 40px rgba(0,0,0,.6);min-width:210px;backdrop-filter:blur(16px)}
 .leaflet-popup-tip{background:rgba(5,12,32,.96)}
@@ -799,8 +803,66 @@ const SHIPS_DATA=[
 window.addEventListener('resize',()=>map.invalidateSize());
 
 const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap / CARTO'}).addTo(map);
-L.control.attribution({position:'bottomright',prefix:'© ESRI Ocean Basemap'}).addTo(map);
+// ── FLAT POLITICAL MAP (CNN/BBC-style, no tiles) ──
+// Create a pane below attack overlays so lines always stay on top
+map.createPane('countriesPane');
+map.getPane('countriesPane').style.zIndex='150';
+
+// Ocean background color
+map.getContainer().style.background='#c4d8e8';
+
+// Color definitions by ISO 3166-1 numeric code
+const FLAT_MAP_COUNTRIES={
+  364:{fill:'#c4895c',stroke:'#a06030',w:1.2,name:'Iran'},
+  376:{fill:'#4d83b8',stroke:'#2d5888',w:1.2,name:'Israel'},
+  275:{fill:'#4d83b8',stroke:'#2d5888',w:1.0,name:'Palestine'},
+  368:{fill:'#b8a265',stroke:'#8a7840',w:0.8,name:'Iraq'},
+  760:{fill:'#a89c60',stroke:'#806e30',w:0.8,name:'Syria'},
+  400:{fill:'#beb070',stroke:'#8a8040',w:0.8,name:'Jordan'},
+  422:{fill:'#a89c60',stroke:'#806e30',w:0.8,name:'Lebanon'},
+  792:{fill:'#b4b07a',stroke:'#888450',w:0.8,name:'Turkey'},
+  818:{fill:'#c8b87a',stroke:'#a09050',w:0.8,name:'Egypt'},
+  887:{fill:'#a09060',stroke:'#786840',w:0.8,name:'Yemen'},
+  414:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Kuwait'},
+  634:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Qatar'},
+  784:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'UAE'},
+   48:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Bahrain'},
+  512:{fill:'#c0a060',stroke:'#907830',w:0.8,name:'Oman'},
+  682:{fill:'#d4b070',stroke:'#a08840',w:0.8,name:'Saudi Arabia'},
+    4:{fill:'#a09060',stroke:'#787040',w:0.6,name:'Afghanistan'},
+  586:{fill:'#a89860',stroke:'#807040',w:0.6,name:'Pakistan'},
+  643:{fill:'#9db8a8',stroke:'#6d8878',w:0.6,name:'Russia'},
+  156:{fill:'#9ab0b0',stroke:'#6a8080',w:0.6,name:'China'},
+  356:{fill:'#b0a888',stroke:'#807860',w:0.6,name:'India'},
+  840:{fill:'#8099b8',stroke:'#506888',w:0.6,name:'USA'},
+};
+
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+  .then(r=>r.json())
+  .then(world=>{
+    if(typeof topojson==='undefined'){console.warn('topojson not loaded');return;}
+    const geojson=topojson.feature(world,world.objects.countries);
+    L.geoJSON(geojson,{
+      pane:'countriesPane',
+      style:f=>{
+        const c=FLAT_MAP_COUNTRIES[+f.id];
+        return{
+          fillColor:  c?c.fill  :'#ccc4ae',
+          fillOpacity:1,
+          color:      c?c.stroke:'#b0a890',
+          weight:     c?c.w     :0.35,
+          opacity:    0.85
+        };
+      },
+      onEachFeature:(f,layer)=>{
+        const c=FLAT_MAP_COUNTRIES[+f.id];
+        if(c) layer.bindTooltip(c.name,{permanent:false,sticky:true,className:'leaflet-tooltip-country'});
+      }
+    }).addTo(map);
+  })
+  .catch(e=>console.warn('Flat map countries failed:',e));
+
+L.control.attribution({position:'bottomright',prefix:'© Natural Earth / OpenStreetMap'}).addTo(map);
 setTimeout(()=>map.invalidateSize(),150);
 setTimeout(()=>map.invalidateSize(),500);
 
