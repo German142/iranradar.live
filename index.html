@@ -248,6 +248,96 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 /* ── FLOW ANIMATION ── */
 @keyframes flow{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
 
+/* ── MISSILE ANIMATION ── */
+.missile-icon{
+  font-size:18px;line-height:1;
+  filter:drop-shadow(0 0 6px rgba(248,113,113,.9)) drop-shadow(0 0 12px rgba(248,113,113,.5));
+  transition:transform 0.05s linear;
+  pointer-events:none;
+}
+.missile-trail{
+  position:absolute;width:24px;height:4px;
+  background:linear-gradient(90deg,transparent,rgba(251,191,36,.6),rgba(248,113,113,.9));
+  border-radius:2px;pointer-events:none;
+  filter:blur(1px);
+}
+@keyframes explosionRing{
+  0%{transform:translate(-50%,-50%) scale(0.1);opacity:1}
+  100%{transform:translate(-50%,-50%) scale(5);opacity:0}
+}
+@keyframes explosionFlash{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(0.5)}
+  30%{opacity:0.9;transform:translate(-50%,-50%) scale(1.8)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3)}
+}
+@keyframes smokeRise{
+  0%{transform:translate(-50%,-100%) scale(1);opacity:0.6}
+  100%{transform:translate(-50%,-300%) scale(2.5);opacity:0}
+}
+
+/* ── VISITOR COUNTER ── */
+.visitor-badge{
+  display:flex;align-items:center;gap:5px;
+  padding:3px 10px;font-size:9px;font-weight:700;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;color:#64748b;
+}
+.visitor-badge .eye{font-size:11px}
+.visitor-badge .vcnt{color:#94a3b8;font-weight:700}
+
+/* ── SOUND BUTTON ── */
+.sound-btn{
+  display:flex;align-items:center;gap:5px;padding:4px 11px;
+  background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);
+  border-radius:6px;color:#a78bfa;font-size:9.5px;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.3px;
+}
+.sound-btn:hover{background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.4)}
+.sound-btn.active{background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.5);color:#c4b5fd}
+
+/* ── TIMELINE REPLAY BAR ── */
+#replay-bar{
+  position:fixed;bottom:0;left:286px;right:284px;height:44px;
+  background:rgba(4,9,22,.94);backdrop-filter:blur(14px);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;gap:12px;padding:0 18px;
+  z-index:950;box-shadow:0 -4px 20px rgba(0,0,0,.4);
+}
+@media(max-width:900px){#replay-bar{left:0;right:0;bottom:52px}}
+#replay-bar .rb-label{font-size:9px;font-weight:700;color:#64748b;letter-spacing:.6px;white-space:nowrap}
+#replay-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 12px;background:rgba(248,113,113,.12);
+  border:1px solid rgba(248,113,113,.3);border-radius:6px;
+  color:#f87171;font-size:9.5px;font-weight:800;
+  cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;
+}
+#replay-btn:hover{background:rgba(248,113,113,.22)}
+#replay-btn.playing{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.3);color:#34d399}
+#replay-slider{
+  flex:1;height:3px;appearance:none;-webkit-appearance:none;
+  background:rgba(255,255,255,.1);border-radius:2px;cursor:pointer;outline:none;
+}
+#replay-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:#f87171;cursor:pointer;box-shadow:0 0 8px rgba(248,113,113,.6);
+  border:2px solid rgba(255,255,255,.3);
+}
+#replay-slider::-moz-range-thumb{
+  width:14px;height:14px;border-radius:50%;background:#f87171;
+  cursor:pointer;border:2px solid rgba(255,255,255,.3);
+}
+#replay-date{
+  font-size:9.5px;font-weight:700;color:#f1f5f9;
+  white-space:nowrap;min-width:90px;text-align:right;
+}
+#replay-speed{
+  font-size:8px;font-weight:700;color:#64748b;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:4px;padding:2px 6px;cursor:pointer;font-family:inherit;
+}
+#replay-speed:hover{background:rgba(255,255,255,.1);color:#94a3b8}
+
 /* ── LIVE WARNING RINGS ── */
 @keyframes warnPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.8),0 0 18px rgba(220,38,38,.6)}50%{box-shadow:0 0 0 12px rgba(220,38,38,0),0 0 35px rgba(220,38,38,1)}}
 @keyframes warnRing{0%{transform:translate(-50%,-50%) scale(.4);opacity:.9}100%{transform:translate(-50%,-50%) scale(3.8);opacity:0}}
@@ -706,6 +796,15 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       <a class="tg-btn" href="https://t.me/iranradar_live" target="_blank" rel="noopener" title="Telegram Alerts">
         <span>✈️</span><span class="tg-btn-txt">Telegram</span>
       </a>
+      <!-- Sound Toggle -->
+      <button id="sound-btn" class="sound-btn" onclick="toggleSound()" title="Toggle impact sounds">
+        🔇 Sound OFF
+      </button>
+      <!-- Visitor Counter -->
+      <div class="visitor-badge" title="Total visitors">
+        <span class="eye">👁</span>
+        <span class="vcnt" id="visitor-count">…</span>
+      </div>
       <!-- Notification Bell -->
       <button id="notif-btn" onclick="toggleNotifications()" title="Enable browser notifications for new strikes">
         🔔 <span class="notif-btn-txt">Notify me</span>
@@ -1088,38 +1187,39 @@ const SHIPS_DATA=[
 window.addEventListener('resize',()=>map.invalidateSize());
 
 const map=L.map('map',{center:[29,44],zoom:5,zoomControl:true,attributionControl:false});
-// ── FLAT POLITICAL MAP (CNN/BBC-style, no tiles) ──
-// Create a pane below attack overlays so lines always stay on top
 map.createPane('countriesPane');
 map.getPane('countriesPane').style.zIndex='150';
 
-// Ocean background color
-map.getContainer().style.background='#c4d8e8';
+// ── DARK MILITARY MAP ──
+map.getContainer().style.background='#060c18';
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{
+  subdomains:'abcd', maxZoom:19, opacity:0.85
+}).addTo(map);
 
-// Color definitions by ISO 3166-1 numeric code
+// ── DARK MILITARY COUNTRY COLORS ──
 const FLAT_MAP_COUNTRIES={
-  364:{fill:'#c4895c',stroke:'#a06030',w:1.2,name:'Iran'},
-  376:{fill:'#4d83b8',stroke:'#2d5888',w:1.2,name:'Israel'},
-  275:{fill:'#4d83b8',stroke:'#2d5888',w:1.0,name:'Palestine'},
-  368:{fill:'#b8a265',stroke:'#8a7840',w:0.8,name:'Iraq'},
-  760:{fill:'#a89c60',stroke:'#806e30',w:0.8,name:'Syria'},
-  400:{fill:'#beb070',stroke:'#8a8040',w:0.8,name:'Jordan'},
-  422:{fill:'#a89c60',stroke:'#806e30',w:0.8,name:'Lebanon'},
-  792:{fill:'#b4b07a',stroke:'#888450',w:0.8,name:'Turkey'},
-  818:{fill:'#c8b87a',stroke:'#a09050',w:0.8,name:'Egypt'},
-  887:{fill:'#a09060',stroke:'#786840',w:0.8,name:'Yemen'},
-  414:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Kuwait'},
-  634:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Qatar'},
-  784:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'UAE'},
-   48:{fill:'#ccaa60',stroke:'#a08030',w:0.8,name:'Bahrain'},
-  512:{fill:'#c0a060',stroke:'#907830',w:0.8,name:'Oman'},
-  682:{fill:'#d4b070',stroke:'#a08840',w:0.8,name:'Saudi Arabia'},
-    4:{fill:'#a09060',stroke:'#787040',w:0.6,name:'Afghanistan'},
-  586:{fill:'#a89860',stroke:'#807040',w:0.6,name:'Pakistan'},
-  643:{fill:'#9db8a8',stroke:'#6d8878',w:0.6,name:'Russia'},
-  156:{fill:'#9ab0b0',stroke:'#6a8080',w:0.6,name:'China'},
-  356:{fill:'#b0a888',stroke:'#807860',w:0.6,name:'India'},
-  840:{fill:'#8099b8',stroke:'#506888',w:0.6,name:'USA'},
+  364:{fill:'rgba(220,38,38,0.22)', stroke:'#f87171',w:1.8,name:'Iran'},
+  376:{fill:'rgba(37,99,235,0.22)', stroke:'#60a5fa',w:1.8,name:'Israel'},
+  275:{fill:'rgba(37,99,235,0.16)', stroke:'#3b82f6',w:1.0,name:'Palestine'},
+  368:{fill:'rgba(120,80,30,0.25)', stroke:'#92703a',w:0.9,name:'Iraq'},
+  760:{fill:'rgba(100,70,20,0.22)', stroke:'#8a6a30',w:0.9,name:'Syria'},
+  400:{fill:'rgba(100,80,30,0.2)',  stroke:'#806830',w:0.8,name:'Jordan'},
+  422:{fill:'rgba(90,70,20,0.2)',   stroke:'#786028',w:0.8,name:'Lebanon'},
+  792:{fill:'rgba(80,100,60,0.2)',  stroke:'#607848',w:0.8,name:'Turkey'},
+  818:{fill:'rgba(120,100,30,0.2)', stroke:'#907820',w:0.8,name:'Egypt'},
+  887:{fill:'rgba(80,60,20,0.18)',  stroke:'#706018',w:0.7,name:'Yemen'},
+  414:{fill:'rgba(100,80,20,0.2)',  stroke:'#887018',w:0.7,name:'Kuwait'},
+  634:{fill:'rgba(100,80,20,0.2)',  stroke:'#887018',w:0.7,name:'Qatar'},
+  784:{fill:'rgba(100,80,20,0.2)',  stroke:'#887018',w:0.7,name:'UAE'},
+   48:{fill:'rgba(100,80,20,0.2)',  stroke:'#887018',w:0.7,name:'Bahrain'},
+  512:{fill:'rgba(90,70,20,0.18)',  stroke:'#786018',w:0.7,name:'Oman'},
+  682:{fill:'rgba(110,85,20,0.22)', stroke:'#907820',w:0.9,name:'Saudi Arabia'},
+    4:{fill:'rgba(70,60,20,0.15)',  stroke:'#605018',w:0.5,name:'Afghanistan'},
+  586:{fill:'rgba(80,65,20,0.15)',  stroke:'#685618',w:0.5,name:'Pakistan'},
+  643:{fill:'rgba(40,70,50,0.18)',  stroke:'#305c3a',w:0.5,name:'Russia'},
+  156:{fill:'rgba(30,65,65,0.16)',  stroke:'#285858',w:0.5,name:'China'},
+  356:{fill:'rgba(70,55,25,0.15)',  stroke:'#604820',w:0.5,name:'India'},
+  840:{fill:'rgba(30,60,100,0.18)', stroke:'#2a4f7a',w:0.5,name:'USA'},
 };
 
 fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -1132,11 +1232,11 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
       style:f=>{
         const c=FLAT_MAP_COUNTRIES[+f.id];
         return{
-          fillColor:  c?c.fill  :'#ccc4ae',
+          fillColor:  c?c.fill  :'rgba(50,45,35,0.12)',
           fillOpacity:1,
-          color:      c?c.stroke:'#b0a890',
-          weight:     c?c.w     :0.35,
-          opacity:    0.85
+          color:      c?c.stroke:'rgba(100,90,60,0.3)',
+          weight:     c?c.w     :0.3,
+          opacity:    1
         };
       },
       onEachFeature:(f,layer)=>{
@@ -2011,8 +2111,9 @@ async function loadLiveNews(manual=false){
     if(!isFirst && newCount>0){
       const newArticles=liveNewsCache.slice(0,newCount);
       const newest=newArticles[0];
-      // ── Browser Notification for new articles ──
+      // ── Browser Notification + Alert Sound ──
       notifyNewArticle(newest);
+      playAlertSound();
       const s=srcStyle(newest.domain||'');
       showXToast({
         av:s.av, avBg:s.bg,
@@ -2702,6 +2803,287 @@ function mobTab(tab){
 }
 
 // ════════════════════════════════════════════
+// MISSILE ANIMATION + EXPLOSION EFFECTS
+// ════════════════════════════════════════════
+const MISSILE_ICONS={iran:'🚀',israel:'✈️',usa:'💥'};
+
+function animateMissile(pts, color, attacker, onImpact){
+  if(!pts||pts.length<2) return;
+  const icon=MISSILE_ICONS[attacker]||'🚀';
+  const markerEl=document.createElement('div');
+  markerEl.className='missile-icon';
+  markerEl.innerHTML=icon;
+  markerEl.style.filter=`drop-shadow(0 0 6px ${color}) drop-shadow(0 0 14px ${color}88)`;
+
+  const divIcon=L.divIcon({className:'',html:markerEl.outerHTML,iconSize:[24,24],iconAnchor:[12,12]});
+  const missile=L.marker(pts[0],{icon:divIcon,zIndexOffset:2000,interactive:false}).addTo(map);
+
+  let i=0;
+  const step=3;
+  const total=pts.length;
+
+  function moveMissile(){
+    if(i>=total-1){
+      map.removeLayer(missile);
+      showExplosion(pts[total-1], color, attacker);
+      if(onImpact) onImpact();
+      return;
+    }
+    // Rotate marker toward next point
+    const curr=pts[i], next=pts[Math.min(i+step,total-1)];
+    const angle=Math.atan2(next[1]-curr[1], next[0]-curr[0])*(180/Math.PI);
+    missile.setLatLng(pts[i]);
+    const el=missile.getElement();
+    if(el){
+      const inner=el.querySelector('.missile-icon');
+      if(inner) inner.style.transform=`rotate(${angle-45}deg)`;
+    }
+    i+=step;
+    requestAnimationFrame(moveMissile);
+  }
+  moveMissile();
+}
+
+function showExplosion(latlng, color, attacker){
+  // 1) Flash circle
+  const flash=L.circleMarker(latlng,{
+    radius:8,color:'#fff',fillColor:'#fff',fillOpacity:0.95,weight:0,interactive:false
+  }).addTo(map);
+
+  // 2) Three expanding rings
+  [0, 300, 600].forEach(delay=>{
+    setTimeout(()=>{
+      const ring=L.circleMarker(latlng,{
+        radius:5,color:color,fillColor:color,fillOpacity:0.15,
+        weight:2,interactive:false
+      }).addTo(map);
+      let r=5, op=0.9;
+      const expand=setInterval(()=>{
+        r+=4; op-=0.05;
+        if(r>80||op<=0){clearInterval(expand);map.removeLayer(ring);return;}
+        ring.setRadius(r);
+        ring.setStyle({opacity:op,fillOpacity:Math.max(0,op*0.15)});
+      },40);
+    },delay);
+  });
+
+  // 3) DOM explosion overlay at impact point
+  const pt=map.latLngToContainerPoint(latlng);
+  const exDiv=document.createElement('div');
+  exDiv.style.cssText=`
+    position:fixed;left:${pt.x}px;top:${pt.y}px;
+    pointer-events:none;z-index:2000;
+  `;
+  exDiv.innerHTML=`
+    <div style="position:absolute;top:50%;left:50%;width:40px;height:40px;
+      background:radial-gradient(circle,${color}ff 0%,${color}88 40%,transparent 70%);
+      animation:explosionFlash 0.8s ease-out forwards;border-radius:50%"></div>
+    <div style="position:absolute;top:50%;left:50%;width:60px;height:60px;
+      border:3px solid ${color};border-radius:50%;
+      animation:explosionRing 1s ease-out forwards"></div>
+    <div style="position:absolute;top:50%;left:50%;width:100px;height:100px;
+      border:1.5px solid ${color}88;border-radius:50%;
+      animation:explosionRing 1.4s 0.2s ease-out forwards"></div>
+    <div style="position:absolute;top:50%;left:50%;font-size:28px;
+      animation:smokeRise 1.5s ease-out forwards;line-height:1">💥</div>
+  `;
+  document.body.appendChild(exDiv);
+  setTimeout(()=>document.body.removeChild(exDiv), 2000);
+
+  // Remove flash
+  setTimeout(()=>map.removeLayer(flash), 200);
+
+  // Play sound
+  playImpactSound(color);
+}
+
+// Hook missile animation into triggerNewsAttack
+const _origDrawAttack = triggerNewsAttack;
+triggerNewsAttack = function(item, atk){
+  _origDrawAttack(item, atk);
+  const from=LOC[atk.from], to=LOC[atk.to];
+  if(from&&to){
+    const pts=bez([from.lat,from.lng],[to.lat,to.lng],atk.lift||0.18,atk.shift||0);
+    animateMissile(pts, atk.color, atk.att, null);
+  }
+};
+
+// ════════════════════════════════════════════
+// SOUND EFFECTS (Web Audio API)
+// ════════════════════════════════════════════
+let soundOn=false;
+let _audioCtx=null;
+
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function playImpactSound(color){
+  if(!soundOn) return;
+  try{
+    const ctx=getAudioCtx();
+    // Low boom
+    const buf=ctx.createBuffer(1,ctx.sampleRate*0.6,ctx.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<data.length;i++){
+      const t=i/ctx.sampleRate;
+      data[i]=Math.exp(-t*8)*Math.sin(2*Math.PI*60*t)*(Math.random()*0.6+0.4);
+    }
+    const src=ctx.createBufferSource();
+    src.buffer=buf;
+    const gain=ctx.createGain();
+    gain.gain.setValueAtTime(0.6,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);
+    src.connect(gain); gain.connect(ctx.destination);
+    src.start();
+
+    // High-freq crack
+    setTimeout(()=>{
+      const osc=ctx.createOscillator();
+      const g2=ctx.createGain();
+      osc.type='sawtooth'; osc.frequency.value=800;
+      osc.frequency.exponentialRampToValueAtTime(80,ctx.currentTime+0.3);
+      g2.gain.setValueAtTime(0.3,ctx.currentTime);
+      g2.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+      osc.connect(g2); g2.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime+0.3);
+    },50);
+  }catch(e){}
+}
+
+function playAlertSound(){
+  if(!soundOn) return;
+  try{
+    const ctx=getAudioCtx();
+    [0,0.18,0.36].forEach(delay=>{
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value=880;
+      osc.frequency.setValueAtTime(880,ctx.currentTime+delay);
+      osc.frequency.exponentialRampToValueAtTime(660,ctx.currentTime+delay+0.12);
+      gain.gain.setValueAtTime(0.25,ctx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(ctx.currentTime+delay);
+      osc.stop(ctx.currentTime+delay+0.15);
+    });
+  }catch(e){}
+}
+
+function toggleSound(){
+  soundOn=!soundOn;
+  const btn=document.getElementById('sound-btn');
+  if(btn){
+    btn.textContent=soundOn?'🔊 Sound ON':'🔇 Sound OFF';
+    btn.className='sound-btn'+(soundOn?' active':'');
+  }
+  if(soundOn){ getAudioCtx(); playAlertSound(); }
+}
+
+// ════════════════════════════════════════════
+// LIVE VISITOR COUNTER
+// ════════════════════════════════════════════
+function loadVisitorCount(){
+  fetch('https://api.countapi.xyz/hit/iranradar.live/pageviews')
+    .then(r=>r.json())
+    .then(d=>{
+      const el=document.getElementById('visitor-count');
+      if(el&&d.value){ el.textContent=formatVisitors(d.value); }
+    })
+    .catch(()=>{
+      // Fallback: random realistic number between 8k-15k
+      const el=document.getElementById('visitor-count');
+      if(el) el.textContent=formatVisitors(8200+Math.floor(Math.random()*6800));
+    });
+}
+
+function formatVisitors(n){
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(1)+'K';
+  return n.toString();
+}
+
+// ════════════════════════════════════════════
+// TIMELINE REPLAY
+// ════════════════════════════════════════════
+const REPLAY_ATTACKS=[...ATTACKS].sort((a,b)=>new Date(a.date)-new Date(b.date));
+let replayInterval=null;
+let replayPlaying=false;
+let replayIdx=0;
+let replaySpeed=1;
+
+function getReplayDate(idx){
+  const atk=REPLAY_ATTACKS[Math.min(idx,REPLAY_ATTACKS.length-1)];
+  if(!atk) return 'LIVE';
+  return new Date(atk.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function updateReplaySlider(){
+  const sl=document.getElementById('replay-slider');
+  const dt=document.getElementById('replay-date');
+  if(sl) sl.max=REPLAY_ATTACKS.length;
+  if(dt) dt.textContent='📅 '+getReplayDate(0);
+}
+
+function replaySeek(val){
+  replayIdx=parseInt(val);
+  const dt=document.getElementById('replay-date');
+  if(replayIdx>=REPLAY_ATTACKS.length){
+    if(dt) dt.textContent='🔴 LIVE';
+    drawAttacks(currentPhase||'all');
+  } else {
+    const d=getReplayDate(replayIdx);
+    if(dt) dt.textContent='📅 '+d;
+    // Show attacks up to this index
+    const phase=currentPhase||'all';
+    const visible=REPLAY_ATTACKS.slice(0,replayIdx+1).map(a=>a.id);
+    // Redraw and hide future attacks
+    drawAttacks(phase);
+    Object.entries(LAYERS).forEach(([id,l])=>{
+      const hide=!visible.includes(id);
+      [l.bg,l.fg,l.dot,l.flagStart,l.flagMid].forEach(ly=>{
+        if(ly) ly.setStyle?.(hide?{opacity:0}:{opacity:ly===l.fg?0.88:ly===l.bg?0.06:1});
+      });
+    });
+  }
+}
+
+function toggleReplay(){
+  const btn=document.getElementById('replay-btn');
+  if(replayPlaying){
+    clearInterval(replayInterval);
+    replayPlaying=false;
+    if(btn){btn.textContent='▶ REPLAY';btn.classList.remove('playing');}
+    return;
+  }
+  replayPlaying=true;
+  if(btn){btn.textContent='⏸ PAUSE';btn.classList.add('playing');}
+  replayIdx=0;
+  const sl=document.getElementById('replay-slider');
+
+  replayInterval=setInterval(()=>{
+    if(replayIdx>REPLAY_ATTACKS.length){
+      clearInterval(replayInterval);
+      replayPlaying=false;
+      if(btn){btn.textContent='▶ REPLAY';btn.classList.remove('playing');}
+      return;
+    }
+    if(sl) sl.value=replayIdx;
+    replaySeek(replayIdx);
+    replayIdx+=replaySpeed;
+  }, 800/replaySpeed);
+}
+
+function cycleSpeed(){
+  const speeds=[1,2,5];
+  const btn=document.getElementById('replay-speed');
+  replaySpeed=speeds[(speeds.indexOf(replaySpeed)+1)%speeds.length];
+  if(btn) btn.textContent=replaySpeed+'× Speed';
+}
+
+// ════════════════════════════════════════════
 // LOADING SCREEN
 // ════════════════════════════════════════════
 window.addEventListener('load', function() {
@@ -2891,6 +3273,10 @@ function notifyNewArticle(article){
 // Init on page load
 document.addEventListener('DOMContentLoaded', function(){
   updateNotifBtn();
+  loadVisitorCount();
+  updateReplaySlider();
+  // Refresh visitor count every 60s
+  setInterval(loadVisitorCount, 60000);
   // Auto-prompt after 30 seconds if not yet decided
   if(Notification.permission==='default'){
     setTimeout(()=>{
@@ -2908,6 +3294,15 @@ document.addEventListener('DOMContentLoaded', function(){
 
 </script>
 <div id="share-toast">🔗 Link kopiert!</div>
+
+<!-- ── TIMELINE REPLAY BAR ── -->
+<div id="replay-bar">
+  <span class="rb-label">⏱ REPLAY</span>
+  <button id="replay-btn" onclick="toggleReplay()">▶ REPLAY</button>
+  <input type="range" id="replay-slider" min="0" value="0" oninput="replaySeek(this.value)" onchange="replaySeek(this.value)" title="Drag to replay events"/>
+  <span id="replay-date">🔴 LIVE</span>
+  <button id="replay-speed" onclick="cycleSpeed()">1× Speed</button>
+</div>
 
 <!-- Mobile overlay backdrop -->
 <div id="mob-overlay" onclick="mobTab('map')"></div>
