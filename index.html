@@ -122,6 +122,35 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
   animation:blink 1.4s infinite;
 }
 
+
+/* ── LANGUAGE SWITCHER ── */
+.lang-sw{display:flex;gap:3px;align-items:center;margin-left:10px}
+.lang-btn{padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.4px;cursor:pointer;border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.4);background:transparent;border-radius:4px;transition:all .15s;font-family:inherit}
+.lang-btn:hover{color:rgba(255,255,255,.75);border-color:rgba(255,255,255,.3)}
+.lang-btn.active{color:#22d3ee;border-color:rgba(34,211,238,.55);background:rgba(34,211,238,.09)}
+/* ── SHARE BUTTON ── */
+.share-btn{display:flex;align-items:center;gap:5px;padding:4px 11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:rgba(255,255,255,.65);font-size:9.5px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.3px}
+.share-btn:hover{background:rgba(255,255,255,.11);color:#f1f5f9;border-color:rgba(255,255,255,.28)}
+#share-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:rgba(34,211,153,.12);border:1px solid rgba(34,211,153,.4);border-radius:8px;padding:7px 18px;font-size:11px;font-weight:700;color:#34d399;z-index:9999;pointer-events:none;opacity:0;transition:opacity .35s;white-space:nowrap}
+#share-toast.show{opacity:1}
+/* ── DAILY BRIEF ── */
+.brief-wrap{border-bottom:1px solid rgba(255,255,255,.06);background:rgba(34,211,238,.03)}
+.brief-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 13px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.brief-hdr:hover{background:rgba(255,255,255,.03)}
+.brief-chevron{font-size:10px;color:rgba(255,255,255,.3);transition:transform .2s}
+.brief-chevron.open{transform:rotate(180deg)}
+.brief-body{padding:0 13px 10px;display:none}
+.brief-body.open{display:block}
+.brief-line{display:flex;gap:7px;align-items:flex-start;margin-bottom:6px;font-size:9.5px;color:#94a3b8;line-height:1.4}
+.brief-icon{flex-shrink:0;font-size:11px;margin-top:1px}
+.brief-hl{font-weight:700;color:#e2e8f0}
+/* ── CASUALTY CHART ── */
+.cas-chart-wrap{padding:10px 13px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.cas-chart-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cas-chart-legend{display:flex;gap:9px}
+.cas-cleg{display:flex;align-items:center;gap:3px;font-size:8px;color:rgba(255,255,255,.45);font-weight:600}
+.cas-cleg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
 /* ── STAT CARDS ── */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .scard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;transition:background .15s;cursor:default}
@@ -270,7 +299,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     <div class="leg"><div class="leg-dot" style="background:var(--israel)"></div><span style="font-size:13px;line-height:1">🇮🇱</span> Israel</div>
     <div class="leg"><div class="leg-dot" style="background:var(--usa)"></div><span style="font-size:13px;line-height:1">🇺🇸</span> USA</div>
     <div class="leg"><div class="leg-dot" style="background:var(--ship)"></div><span style="font-size:12px;line-height:1">⚓</span> US Fleet</div>
-    <div class="tb-src">Wikipedia · Al Jazeera · CNN · NPR · USNI · As of: 21 Mar 2026</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="share-btn" onclick="shareMap()" title="Link kopieren">
+        <span>🔗</span><span id="share-btn-txt">Share</span>
+      </button>
+      <div class="lang-sw">
+        <button class="lang-btn active" data-lang="en" onclick="setLang('en',this)">EN</button>
+        <button class="lang-btn" data-lang="de" onclick="setLang('de',this)">DE</button>
+        <button class="lang-btn" data-lang="ar" onclick="setLang('ar',this)">AR</button>
+        <button class="lang-btn" data-lang="fa" onclick="setLang('fa',this)">FA</button>
+        <button class="lang-btn" data-lang="he" onclick="setLang('he',this)">HE</button>
+      </div>
+      <div class="tb-src">Wikipedia · Al Jazeera · CNN · NPR · USNI · As of: 21 Mar 2026</div>
+    </div>
   </div>
 </div>
 
@@ -308,8 +349,23 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     </div>
   </div>
 
+
+  <!-- ══ DAILY BRIEF ══ -->
+  <div class="brief-wrap">
+    <div class="brief-hdr" onclick="toggleBrief()">
+      <div style="display:flex;align-items:center;gap:7px">
+        <div class="live-dot" style="width:5px;height:5px"></div>
+        <span style="font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:1.5px" id="ttl-brief">DAILY BRIEF</span>
+      </div>
+      <span class="brief-chevron" id="brief-chevron">▼</span>
+    </div>
+    <div class="brief-body" id="brief-body">
+      <!-- filled by renderDailyBrief() -->
+    </div>
+  </div>
+
     <div class="sec">
-      <div class="sec-ttl">Overall Statistics</div>
+      <div class="sec-ttl" id="ttl-overall">Overall Statistics</div>
       <div class="stats">
         <div class="scard r"><div class="sval">1.444+</div><div class="slbl">Iran Deaths · 18.551 inj.</div></div>
         <div class="scard b"><div class="sval">1.037+</div><div class="slbl">Israel+Lebanon Deaths</div></div>
@@ -323,8 +379,20 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
         <div class="scard g"><div class="sval">~85%</div><div class="slbl">Intercept Rate IL</div></div>
       </div>
     </div>
+    <div class="cas-chart-wrap">
+      <div class="cas-chart-top">
+        <span class="sec-ttl" style="margin-bottom:0" id="ttl-chart">CASUALTIES BY PHASE</span>
+        <div class="cas-chart-legend">
+          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#f87171"></span>Iran</span>
+          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#60a5fa"></span>Israel</span>
+          <span class="cas-cleg"><span class="cas-cleg-dot" style="background:#fbbf24"></span>USA</span>
+        </div>
+      </div>
+      <div id="cas-chart-svg"></div>
+    </div>
+
     <div class="sec">
-      <div class="sec-ttl">Filter Phase</div>
+      <div class="sec-ttl" id="ttl-filter">Filter Phase</div>
       <div class="pbtn on" onclick="filterPhase('all',this)">
         <div><div class="pbtn-date">2024–2026</div><div class="pbtn-name">All Events</div></div>
         <div class="ptag all">ALL</div>
@@ -379,21 +447,21 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       <div class="xfeed-wrap" id="xfeed"></div>
     </div>
     <div class="sec">
-      <div class="sec-ttl">Selected Event</div>
+      <div class="sec-ttl" id="ttl-event">Selected Event</div>
       <div id="detail"><div class="detail-empty">Click an attack line or marker.</div></div>
     </div>
     <div class="sec">
-      <div class="sec-ttl">Total Weapons Used</div>
+      <div class="sec-ttl" id="ttl-weapons">Total Weapons Used</div>
       <div id="wbars"></div>
     </div>
     <button class="btn-anim" id="animBtn" onclick="runAnimation()">▶ Animate Attacks</button>
     <div class="sec" style="padding-bottom:4px">
-      <div class="sec-ttl">US Fleet Deployed</div>
+      <div class="sec-ttl" id="ttl-fleet">US Fleet Deployed</div>
       <div id="ship-list"></div>
     </div>
     <!-- PERSONNEL BASES -->
     <div class="sec" style="padding-bottom:6px">
-      <div class="sec-ttl">US Bases — Personnel</div>
+      <div class="sec-ttl" id="ttl-bases">US Bases — Personnel</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:2px">
         <div class="scard" style="cursor:pointer" onclick="map.setView([25.12,51.31],7,{animate:true})">
           <div class="sval" style="font-size:14px;color:var(--ship)">~10.000</div>
@@ -418,7 +486,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     <div class="sec">
       <div class="sec-ttl" style="display:flex;align-items:center;gap:6px">
         <div class="live-dot" style="width:5px;height:5px;background:#dc2626"></div>
-        Casualties (Reported)
+        <span id="ttl-cas">Casualties (Reported)</span>
       </div>
       <div style="font-size:9px;color:#94a3b8;margin-bottom:8px;line-height:1.4;padding:5px 7px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);border-radius:5px">
         ⚠️ Real-time military data is classified. Figures based on public reports (Wikipedia, Al Jazeera, AP).
@@ -489,7 +557,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     </div>
 
     <div class="sec">
-      <div class="sec-ttl">Sources</div>
+      <div class="sec-ttl" id="ttl-sources">Sources</div>
       <a class="src-link" href="https://en.wikipedia.org/wiki/Twelve-Day_War" target="_blank">↗ Wikipedia: 12-Day War</a>
       <a class="src-link" href="https://en.wikipedia.org/wiki/2026_Iran_war" target="_blank">↗ Wikipedia: 2026 Iran War</a>
       <a class="src-link" href="https://www.britannica.com/event/12-Day-War" target="_blank">↗ Britannica: 12-Day War</a>
@@ -1738,8 +1806,165 @@ async function runAnimation(){
   });
   btn.disabled=false;btn.innerHTML='▶ Animate Attacks';
 }
+
+// ════════════════════════════════════════════
+// MULTILANGUAGE
+// ════════════════════════════════════════════
+const LANGS={
+  en:{overall:'OVERALL STATISTICS',filter:'FILTER PHASE',news:'LIVE NEWS',
+      event:'SELECTED EVENT',weapons:'TOTAL WEAPONS USED',
+      animate:'▶ Animate Attacks',fleet:'US FLEET DEPLOYED',
+      bases:'US BASES — PERSONNEL',cas:'CASUALTIES (REPORTED)',
+      sources:'SOURCES',brief:'DAILY BRIEF',chart:'CASUALTIES BY PHASE',
+      share:'Share',dir:'ltr'},
+  de:{overall:'GESAMTSTATISTIK',filter:'PHASE FILTERN',news:'LIVE NACHRICHTEN',
+      event:'AUSGEWÄHLTES EREIGNIS',weapons:'WAFFEN GESAMT',
+      animate:'▶ Angriffe animieren',fleet:'US FLOTTE AKTIV',
+      bases:'US BASEN — PERSONAL',cas:'OPFER (GEMELDET)',
+      sources:'QUELLEN',brief:'TAGESBERICHT',chart:'OPFER NACH PHASE',
+      share:'Teilen',dir:'ltr'},
+  ar:{overall:'الإحصاءات العامة',filter:'تصفية المرحلة',news:'أخبار مباشرة',
+      event:'الحدث المحدد',weapons:'إجمالي الأسلحة',
+      animate:'▶ تحريك الهجمات',fleet:'أسطول البحرية الأمريكية',
+      bases:'القواعد الأمريكية',cas:'الضحايا (مُبلَّغ عنهم)',
+      sources:'المصادر',brief:'الموجز اليومي',chart:'الضحايا حسب المرحلة',
+      share:'مشاركة',dir:'rtl'},
+  fa:{overall:'آمار کلی',filter:'فیلتر مرحله',news:'اخبار زنده',
+      event:'رویداد انتخابی',weapons:'کل تسلیحات',
+      animate:'▶ نمایش حملات',fleet:'ناوگان آمریکا',
+      bases:'پایگاه‌های آمریکا',cas:'تلفات (گزارش‌شده)',
+      sources:'منابع',brief:'خلاصه روزانه',chart:'تلفات به تفکیک مرحله',
+      share:'اشتراک‌گذاری',dir:'rtl'},
+  he:{overall:'סטטיסטיקה כללית',filter:'סינון שלב',news:'חדשות חיות',
+      event:'אירוע נבחר',weapons:'כלי נשק סה"כ',
+      animate:'▶ הנפש מתקפות',fleet:'צי ארה"ב',
+      bases:'בסיסי ארה"ב',cas:'נפגעים (מדווח)',
+      sources:'מקורות',brief:'תדרוך יומי',chart:'נפגעים לפי שלב',
+      share:'שתף',dir:'rtl'}
+};
+let currentLang='en';
+function setLang(l,btn){
+  currentLang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));
+  const t=LANGS[l]||LANGS.en;
+  const dir=t.dir||'ltr';
+  document.querySelector('.lpanel').style.direction=dir;
+  document.querySelector('.rpanel').style.direction=dir;
+  const ids={
+    'ttl-overall':t.overall,'ttl-filter':t.filter,
+    'ttl-event':t.event,'ttl-weapons':t.weapons,
+    'ttl-fleet':t.fleet,'ttl-bases':t.bases,
+    'ttl-sources':t.sources,'ttl-brief':t.brief,
+    'ttl-chart':t.chart,'share-btn-txt':t.share
+  };
+  Object.entries(ids).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.textContent=val;});
+  const animBtn=document.getElementById('animBtn');
+  if(animBtn&&!animBtn.disabled)animBtn.innerHTML=t.animate;
+  // LIVE NEWS label
+  const newsEl=document.querySelector('#xfeed')?.closest('.sec')?.querySelector('span[style*="font-weight:800"]');
+  if(newsEl) newsEl.textContent=t.news;
+  // Casualties header
+  const casEl=document.getElementById('ttl-cas');
+  if(casEl) casEl.textContent=t.cas;
+}
+
+// ════════════════════════════════════════════
+// SHARE BUTTON
+// ════════════════════════════════════════════
+function shareMap(){
+  const url=window.location.href;
+  const toast=document.getElementById('share-toast');
+  const t=LANGS[currentLang]||LANGS.en;
+  const copy=()=>{toast.textContent='🔗 '+t.share+' ✓';toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2200);};
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(copy).catch(()=>{fallbackCopy(url);copy();});
+  } else { fallbackCopy(url); copy(); }
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');
+  ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);
+}
+
+// ════════════════════════════════════════════
+// DAILY BRIEF
+// ════════════════════════════════════════════
+function toggleBrief(){
+  const body=document.getElementById('brief-body');
+  const chev=document.getElementById('brief-chevron');
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(chev) chev.classList.toggle('open',open);
+}
+function renderDailyBrief(){
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Find most recent attack
+  const latest=ATTACKS[ATTACKS.length-1];
+  const latestLoc=LOC[latest?.to]||{};
+  const lines=[
+    {icon:'📅',text:`<span class="brief-hl">${dateStr}</span>`},
+    {icon:'⚔️',text:`<span class="brief-hl">Day 22</span> of the 2026 Iran–Israel–USA War — Wave 70`},
+    {icon:'🚀',text:`Iran launched <span class="brief-hl">2,870+ missiles &amp; 5,400+ drones</span> in 70 waves`},
+    {icon:'💥',text:`USA+Israel struck <span class="brief-hl">7,000+ targets</span> — nuclear sites, IRGC HQ &amp; leadership`},
+    {icon:'🛢️',text:`Brent crude <span class="brief-hl">$112/barrel</span> · Hormuz Strait restricted · $110B economic damage`},
+    {icon:'📍',text:`Last strike: <span class="brief-hl">Diego Garcia</span> — 2 ballistic missiles (Mar 21, 2026)`},
+    {icon:'🔔',text:`Netanyahu Mar 19: <span class="brief-hl">"Iran can no longer enrich uranium"</span>`},
+  ];
+  const html=lines.map(l=>`<div class="brief-line"><span class="brief-icon">${l.icon}</span><span>${l.text}</span></div>`).join('');
+  const el=document.getElementById('brief-body');
+  if(el) el.innerHTML=html;
+}
+
+// ════════════════════════════════════════════
+// CASUALTY CHART
+// ════════════════════════════════════════════
+function renderCasChart(){
+  const phases=['Apr 2024','Oct 2024','Jun 2025','Mar 2026'];
+  const iranD=[7,57,350,1444];
+  const ilD  =[0,5,75,1037];
+  const usaD =[0,0,5,13];
+  const W=252,H=96,pL=28,pR=6,pT=6,pB=24;
+  const cW=W-pL-pR, cH=H-pT-pB;
+  const maxV=1500;
+  const sx=i=>pL+i*(cW/3);
+  const sy=v=>pT+cH-(v/maxV*cH);
+  const path=d=>`<polyline points="${d.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')}" fill="none" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const dots=(d,col)=>d.map((v,i)=>`<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="2.8" fill="${col}" stroke="rgba(4,10,26,.9)" stroke-width="1.5"><title>${phases[i]}: ${v.toLocaleString()} killed</title></circle>`).join('');
+  const grid=[0,500,1000,1500].map(v=>`<line x1="${pL}" y1="${sy(v).toFixed(1)}" x2="${W-pR}" y2="${sy(v).toFixed(1)}" stroke="rgba(255,255,255,.06)" stroke-width="${v===0?1:.7}"/>`).join('');
+  const yLbls=[0,500,1000].map(v=>`<text x="${pL-3}" y="${(sy(v)+4).toFixed(1)}" font-size="6.5" fill="rgba(255,255,255,.28)" text-anchor="end" font-family="Inter,sans-serif">${v===0?'0':v/1000+'k'}</text>`).join('');
+  const xLbls=phases.map((p,i)=>`<text x="${sx(i).toFixed(1)}" y="${H-5}" font-size="7" fill="rgba(255,255,255,.35)" text-anchor="middle" font-family="Inter,sans-serif">${p}</text>`).join('');
+  // Area fill under Iran line
+  const iranPts=iranD.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
+  const areaIran=`<polygon points="${sx(0).toFixed(1)},${sy(0).toFixed(1)} ${iranPts} ${sx(3).toFixed(1)},${sy(0).toFixed(1)}" fill="url(#irgrad)" opacity=".25"/>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible">
+    <defs>
+      <linearGradient id="irgrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f87171"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </linearGradient>
+    </defs>
+    ${grid}${areaIran}
+    <polyline points="${iranD.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#f87171" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${ilD.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${usaD.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots(iranD,'#f87171')}${dots(ilD,'#60a5fa')}${dots(usaD,'#fbbf24')}
+    ${yLbls}${xLbls}
+  </svg>`;
+  const el=document.getElementById('cas-chart-svg');
+  if(el) el.innerHTML=svg;
+}
+
+// Init on load
+renderDailyBrief();
+renderCasChart();
+
 </script>
+<div id="share-toast">🔗 Link kopiert!</div>
 </body>
 </html>
+
 
 
