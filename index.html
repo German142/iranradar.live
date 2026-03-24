@@ -783,9 +783,9 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 #defcon-hud .d2{color:#f97316}
 #defcon-hud .d3{color:#eab308}
 /* Radar canvas */
-#radar-canvas{position:fixed;bottom:18px;left:18px;width:140px;height:140px;
-  z-index:1800;border-radius:50%;border:1px solid rgba(0,255,100,.3);
-  box-shadow:0 0 20px rgba(0,255,100,.15);pointer-events:none;opacity:.8}
+#radar-canvas{position:fixed;bottom:62px;left:10px;width:90px;height:90px;
+  z-index:1800;border-radius:50%;border:1px solid rgba(0,255,100,.35);
+  box-shadow:0 0 14px rgba(0,255,100,.2);pointer-events:none;opacity:.85}
 /* News Ticker */
 #news-ticker{position:fixed;bottom:0;left:0;right:0;height:28px;
   background:rgba(5,12,25,.92);border-top:1px solid rgba(239,68,68,.3);
@@ -3859,7 +3859,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <!-- ══ C&C OVERLAY ELEMENTS ══ -->
 <div id="defcon-hud">DEFCON <span class="d2">2</span> | Day <span id="defcon-day">548</span> | Wave <span id="defcon-wave">70</span> | Oil $<span id="defcon-oil">112</span> | Active Fronts: 9 | EW Sat: ~85%</div>
-<canvas id="radar-canvas" width="140" height="140"></canvas>
+<canvas id="radar-canvas" width="90" height="90"></canvas>
 
 <div id="news-ticker">
   <div class="ticker-badge">LIVE</div>
@@ -4018,7 +4018,7 @@ function triggerExplosion(lat,lng,color){
   const canvas=document.getElementById('radar-canvas');
   if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const W=140,H=140,cx=70,cy=70,R=68;
+  const W=90,H=90,cx=45,cy=45,R=43;
   let angle=0;
   const dots=[];
   for(let i=0;i<12;i++){
