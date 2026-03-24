@@ -63,7 +63,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 
 /* ── MAP HINT ── */
 .map-hint{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:600;
+  position:fixed;bottom:38px;left:50%;transform:translateX(-50%);z-index:600;
   background:rgba(4,10,26,.82);backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.1);border-radius:20px;
   padding:5px 16px;font-size:10px;color:rgba(255,255,255,.5);
@@ -242,7 +242,51 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 #share-toast.show{opacity:1}
 
 /* ── KEYBOARD HINT ── */
-#kb-hint{position:fixed;bottom:16px;right:14px;font-size:8.5px;color:rgba(255,255,255,.18);z-index:600;pointer-events:none;line-height:1.8;text-align:right}
+#kb-hint{position:fixed;bottom:38px;right:14px;font-size:8.5px;color:rgba(255,255,255,.18);z-index:600;pointer-events:none;line-height:1.8;text-align:right}
+/* ── DEFCON HUD ── */
+#defcon-hud{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:900;display:flex;align-items:center;gap:12px;background:rgba(4,10,26,.9);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:5px 16px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 2px 20px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.03);font-family:'Inter',sans-serif;pointer-events:none;white-space:nowrap}
+.hud-sep{color:rgba(255,255,255,.1);font-size:16px;line-height:1}
+.hud-item{display:flex;align-items:center;gap:5px}
+.hud-lbl{font-size:7.5px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.8px;text-transform:uppercase}
+.hud-val{font-size:11px;font-weight:800;color:#f1f5f9}
+.hud-defcon{display:flex;align-items:center;gap:7px;background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:3px 11px}
+.hud-defcon-lbl{font-size:7.5px;font-weight:700;color:#fca5a5;letter-spacing:1.2px}
+.hud-defcon-num{font-size:15px;font-weight:900;color:#ef4444;animation:warnBlink 1.2s infinite}
+
+/* ── NEWS TICKER ── */
+#news-ticker{position:fixed;bottom:0;left:0;right:0;height:30px;z-index:700;background:rgba(3,8,22,.97);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;overflow:hidden}
+.ticker-badge{flex-shrink:0;background:#dc2626;padding:0 12px;height:100%;display:flex;align-items:center;gap:6px;font-size:9px;font-weight:900;color:#fff;letter-spacing:1.5px;border-right:1px solid rgba(255,255,255,.12)}
+.ticker-dot-anim{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 1s infinite;flex-shrink:0}
+.ticker-wrap{flex:1;overflow:hidden;height:100%;position:relative}
+.ticker-scroll{display:flex;align-items:center;height:100%;white-space:nowrap;animation:tickerMove 80s linear infinite}
+.ticker-scroll:hover{animation-play-state:paused;cursor:default}
+@keyframes tickerMove{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+.ticker-item{font-size:10px;color:#e2e8f0;padding:0 20px;border-right:1px solid rgba(255,255,255,.07)}
+.ti-src{font-size:8px;font-weight:800;margin-right:5px}
+.ti-brk{color:#f87171;font-weight:800;font-size:8px;margin-right:5px;letter-spacing:.6px}
+
+/* ── OBJECTIVES PANEL ── */
+#obj-panel{position:fixed;right:292px;bottom:38px;z-index:600;width:248px;background:rgba(4,10,26,.97);border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);display:none;font-family:'Inter',sans-serif}
+#obj-panel.open{display:block;animation:fadeIn .2s ease}
+.obj-hdr{padding:9px 13px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);font-size:9px;font-weight:800;color:#f1f5f9;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+.obj-close-btn{background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:0;line-height:1;pointer-events:all}
+.obj-item{display:flex;align-items:flex-start;gap:8px;padding:7px 13px;border-bottom:1px solid rgba(255,255,255,.04);font-size:9.5px}
+.obj-item:last-child{border-bottom:none}
+.obj-check{font-size:12px;flex-shrink:0;margin-top:1px}
+.obj-name{flex:1;color:#cbd5e1;line-height:1.3}
+.obj-tag{font-size:7.5px;font-weight:800;padding:1px 5px;border-radius:3px;letter-spacing:.5px;flex-shrink:0;margin-top:2px}
+.obj-tag.d{background:rgba(248,113,113,.15);color:#fca5a5}
+.obj-tag.n{background:rgba(52,211,153,.12);color:#6ee7b7}
+.obj-tag.a{background:rgba(251,191,36,.12);color:#fcd34d}
+.obj-tag.p{background:rgba(100,116,139,.15);color:#94a3b8}
+.obj-tag.b{background:rgba(167,139,250,.15);color:#c4b5fd}
+
+/* ── AIR DEFENSE ZONE INDICATOR ── */
+#airdef-dot{width:6px;height:6px;border-radius:50%;background:rgba(100,116,139,.5);flex-shrink:0;transition:background .2s}
+
+/* ── RADAR CANVAS ── */
+#radar-canvas{position:fixed;top:54px;left:286px;right:284px;bottom:30px;pointer-events:none;z-index:80;opacity:.6}
+
 
 </style>
 </head>
@@ -266,6 +310,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
   <div style="display:flex;gap:6px;padding-left:10px;flex-shrink:0">
     <button class="tb-icon-btn" onclick="openStatsModal()" title="Conflict Statistics [S]">📊 Stats</button>
     <button class="tb-icon-btn" onclick="shareMap()" title="Share current view [C]">🔗 Share</button>
+    <button class="tb-icon-btn" onclick="toggleAirDefense()" title="Toggle Air Defense Zones [A]" style="gap:6px">🛡️<span id="airdef-dot"></span></button>
+    <button class="tb-icon-btn" onclick="toggleObjectives()" title="War Objectives [O]">⚔️ Obj</button>
   </div>
 </div>
 
@@ -315,6 +361,24 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     <div class="tl" id="tl"></div>
   </div>
 
+<!-- ── DEFCON WAR ROOM HUD ── -->
+<div id="defcon-hud">
+  <div class="hud-defcon">
+    <span class="hud-defcon-lbl">DEFCON</span>
+    <span class="hud-defcon-num">2</span>
+  </div>
+  <span class="hud-sep">|</span>
+  <div class="hud-item"><span class="hud-lbl">Day</span>&nbsp;<span class="hud-val" style="color:#34d399">22</span></div>
+  <span class="hud-sep">|</span>
+  <div class="hud-item"><span class="hud-lbl">Wave</span>&nbsp;<span class="hud-val" style="color:#a78bfa">70</span></div>
+  <span class="hud-sep">|</span>
+  <div class="hud-item"><span class="hud-lbl">Oil</span>&nbsp;<span class="hud-val" style="color:#fbbf24">$112</span></div>
+  <span class="hud-sep">|</span>
+  <div class="hud-item"><span class="hud-lbl">Active Fronts</span>&nbsp;<span class="hud-val" style="color:#f87171">9</span></div>
+  <span class="hud-sep">|</span>
+  <div class="hud-item"><span class="hud-lbl">Intercept</span>&nbsp;<span class="hud-val" style="color:#22d3ee">~85%</span></div>
+</div>
+<canvas id="radar-canvas"></canvas>
 <div id="map"></div>
 <div class="map-hint">Click line or marker for details · Scroll to zoom</div>
 
@@ -772,6 +836,7 @@ function showDetail(atk){
   document.querySelectorAll('.tli').forEach(el=>el.classList.toggle('on',el.dataset.id===atk.id));
   // Fly
   if(fL&&tL){
+    triggerExplosion(tL.lat,tL.lng,atk.color);
     map.fitBounds(L.latLngBounds([fL.lat,fL.lng],[tL.lat,tL.lng]).pad(.25),{animate:true,duration:.7});
   }
 }
@@ -1524,6 +1589,186 @@ async function runAnimation(){
 }
 
 // ════════════════════════════════════════════
+// RADAR SWEEP CANVAS
+// ════════════════════════════════════════════
+(function initRadar(){
+  const cv=document.getElementById('radar-canvas');
+  if(!cv)return;
+  function rsz(){ cv.width=cv.offsetWidth||600; cv.height=cv.offsetHeight||400; }
+  rsz(); window.addEventListener('resize',rsz);
+  let angle=0;
+  const ctx=cv.getContext('2d');
+  function draw(){
+    const w=cv.width,h=cv.height;
+    if(!w||!h){requestAnimationFrame(draw);return;}
+    ctx.clearRect(0,0,w,h);
+    const cx=w/2,cy=h/2,r=Math.min(w,h)*0.42;
+    // rings
+    [.33,.66,1].forEach(f=>{
+      ctx.beginPath();ctx.arc(cx,cy,r*f,0,Math.PI*2);
+      ctx.strokeStyle='rgba(34,211,153,.1)';ctx.lineWidth=1;ctx.setLineDash([]);ctx.stroke();
+    });
+    // crosshairs
+    ctx.setLineDash([3,10]);ctx.strokeStyle='rgba(34,211,153,.07)';ctx.lineWidth=1;
+    for(let a=0;a<Math.PI*2;a+=Math.PI/2){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // sweep trail
+    const sw=Math.PI/3.5;
+    for(let i=0;i<32;i++){
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,angle-sw*(i/32),angle-sw*((i+1)/32));
+      ctx.closePath();ctx.fillStyle=`rgba(34,211,153,${(1-i/32)*0.1})`;ctx.fill();
+    }
+    // sweep line
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(angle)*r,cy+Math.sin(angle)*r);
+    ctx.strokeStyle='rgba(34,211,153,.8)';ctx.lineWidth=1.5;
+    ctx.shadowColor='#22d399';ctx.shadowBlur=7;ctx.stroke();ctx.shadowBlur=0;
+    // center dot
+    ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);
+    ctx.fillStyle='rgba(34,211,153,.7)';ctx.fill();
+    angle+=0.007;if(angle>Math.PI*2)angle-=Math.PI*2;
+    requestAnimationFrame(draw);
+  }
+  setTimeout(draw,800);
+})();
+
+// ════════════════════════════════════════════
+// EXPLOSION ANIMATION
+// ════════════════════════════════════════════
+const EXP_CACHE={};
+function triggerExplosion(lat,lng,color){
+  const key=`${lat},${lng}`;
+  if(EXP_CACHE[key]) EXP_CACHE[key].forEach(l=>{try{map.removeLayer(l);}catch(e){}});
+  const layers=[];
+  // flash
+  const flash=L.circleMarker([lat,lng],{radius:8,color:'#fff',fillColor:color,fillOpacity:1,weight:2,interactive:false}).addTo(map);
+  layers.push(flash);
+  setTimeout(()=>{try{map.removeLayer(flash);}catch(e){}},300);
+  // 3 expanding rings
+  for(let i=0;i<3;i++){
+    setTimeout(()=>{
+      const ring=L.circleMarker([lat,lng],{radius:5,color:color,fillColor:color,fillOpacity:0.4,weight:2,interactive:false}).addTo(map);
+      layers.push(ring);
+      let rv=5,op=0.8;
+      const iv=setInterval(()=>{
+        rv+=2.8;op-=0.055;
+        if(op<=0){clearInterval(iv);try{map.removeLayer(ring);}catch(e){}return;}
+        ring.setRadius(rv);ring.setStyle({opacity:op,fillOpacity:op*0.25});
+      },38);
+    },i*200);
+  }
+  EXP_CACHE[key]=layers;
+}
+
+// ════════════════════════════════════════════
+// AIR DEFENSE ZONES
+// ════════════════════════════════════════════
+const AIRDEF_ZONES=[
+  {lat:32.09,lng:34.79,r:85000,name:'Iron Dome — Tel Aviv',     col:'#22d3ee',st:'active'},
+  {lat:32.79,lng:34.99,r:75000,name:"David's Sling — Haifa",    col:'#22d3ee',st:'overwhelmed'},
+  {lat:31.21,lng:35.01,r:90000,name:'Arrow-3 — Nevatim',        col:'#22d3ee',st:'active'},
+  {lat:25.12,lng:51.31,r:130000,name:'Patriot — Al Udeid',      col:'#fbbf24',st:'active'},
+  {lat:26.22,lng:50.59,r:110000,name:'Patriot — Bahrain Fleet', col:'#fbbf24',st:'active'},
+  {lat:33.36,lng:42.44,r:80000,name:'Patriot — Ain Al-Assad',   col:'#fbbf24',st:'overwhelmed'},
+  {lat:29.37,lng:47.98,r:70000,name:'Patriot — Kuwait',         col:'#fbbf24',st:'active'},
+];
+let airDefLayers=[],airDefOn=false;
+function toggleAirDefense(){
+  airDefOn=!airDefOn;
+  const dot=document.getElementById('airdef-dot');
+  if(airDefOn){
+    AIRDEF_ZONES.forEach(z=>{
+      const c=z.st==='overwhelmed'?'#ef4444':z.col;
+      const circle=L.circle([z.lat,z.lng],{radius:z.r,color:c,fillColor:c,fillOpacity:0.05,weight:1.5,dashArray:'5 7',interactive:true}).addTo(map)
+        .bindTooltip(`<b>${z.name}</b><br><span style="color:${c};font-weight:700">${z.st.toUpperCase()}</span>`,{sticky:true});
+      airDefLayers.push(circle);
+    });
+    if(dot) dot.style.background='#22d3ee';
+  } else {
+    airDefLayers.forEach(l=>{try{map.removeLayer(l);}catch(e){}});
+    airDefLayers=[];
+    if(dot) dot.style.background='rgba(100,116,139,.5)';
+  }
+}
+// 'A' keyboard shortcut
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if((e.key==='a'||e.key==='A')&&!e.ctrlKey&&!e.metaKey) toggleAirDefense();
+  if((e.key==='o'||e.key==='O')&&!e.ctrlKey&&!e.metaKey) toggleObjectives();
+});
+
+// ════════════════════════════════════════════
+// OBJECTIVES PANEL
+// ════════════════════════════════════════════
+function toggleObjectives(){
+  document.getElementById('obj-panel').classList.toggle('open');
+}
+
+// ════════════════════════════════════════════
+// SHIP PATROL MOVEMENT
+// ════════════════════════════════════════════
+(function initShips(){
+  const bases={};
+  Object.entries(LOC).forEach(([k,v])=>{
+    if(v.t==='carrier'||v.t==='destroyer')
+      bases[k]={lat:v.lat,lng:v.lng,ph:Math.random()*Math.PI*2};
+  });
+  let t=0;
+  setInterval(()=>{
+    t+=0.008;
+    Object.entries(bases).forEach(([k,b])=>{
+      const m=ALL_MARKERS[k];if(!m)return;
+      m.setLatLng([b.lat+Math.sin(t+b.ph)*0.07, b.lng+Math.cos(t*0.8+b.ph)*0.09]);
+    });
+  },1800);
+})();
+
+// ════════════════════════════════════════════
+// NEWS TICKER
+// ════════════════════════════════════════════
+const TICKER_STATIC=[
+  {src:'AL JAZEERA',col:'#fbbf24',brk:true, txt:'Iran War Day 22 — 70 missile waves launched at Israel, US bases and Gulf states'},
+  {src:'CENTCOM',   col:'#fcd34d',brk:false,txt:'US forces have struck 7,000+ military targets in Iran since Feb 28, 2026'},
+  {src:'REUTERS',   col:'#34d399',brk:false,txt:'Brent crude hits $112.19/barrel as Strait of Hormuz remains blocked'},
+  {src:'AP NEWS',   col:'#94a3b8',brk:false,txt:'Saudi Arabia intercepts 47 Iranian drones in a single wave — Gulf defenses hold'},
+  {src:'CNN',       col:'#f87171',brk:true, txt:'Trump: "There will be NO DEAL with Iran except UNCONDITIONAL SURRENDER"'},
+  {src:'BBC',       col:'#60a5fa',brk:false,txt:'Kuwait Mina Al-Ahmadi refinery fires — 730,000 bbl/day capacity offline'},
+  {src:'NPR',       col:'#a78bfa',brk:false,txt:'Netanyahu: "Iran can no longer enrich uranium or build ballistic missiles"'},
+  {src:'USNI',      col:'#22d3ee',brk:false,txt:'USS Abraham Lincoln CVN-72 conducting active strike operations — Arabian Sea'},
+  {src:'TIMES OF ISRAEL',col:'#93c5fd',brk:false,txt:'Bahrain 5th Fleet intercepted 143 missiles and 242 drones — headquarters holds'},
+  {src:'AL JAZEERA',col:'#fbbf24',brk:true, txt:'BREAKING: Diego Garcia struck by 2 ballistic missiles — first ever attack on Indian Ocean base'},
+];
+
+function buildTicker(items){
+  const el=document.getElementById('ticker-scroll');if(!el)return;
+  el.innerHTML=items.map(i=>`<span class="ticker-item">${i.brk?'<span class="ti-brk">⚡ BREAKING</span>':''}<span class="ti-src" style="color:${i.col||'#94a3b8'}">${i.src}</span>${i.txt}</span>`).join('');
+  const dur=Math.max(50,items.reduce((s,i)=>s+i.txt.length,0)*0.17);
+  el.style.animationDuration=dur+'s';
+}
+
+function initTicker(){
+  if(liveNewsCache&&liveNewsCache.length>0){
+    const srcMap={'aljazeera.net':'AL JAZEERA','bbc.com':'BBC','reuters.com':'REUTERS','cnn.com':'CNN','apnews.com':'AP NEWS','nytimes.com':'NY TIMES','theguardian.com':'GUARDIAN'};
+    const srcColMap={'aljazeera.net':'#fbbf24','bbc.com':'#60a5fa','reuters.com':'#34d399','cnn.com':'#f87171','apnews.com':'#94a3b8'};
+    buildTicker(liveNewsCache.slice(0,10).map(a=>{
+      const d=a.domain||'';
+      const src=Object.entries(srcMap).find(([k])=>d.includes(k))?.[1]||d.split('.')[0].toUpperCase();
+      const col=Object.entries(srcColMap).find(([k])=>d.includes(k))?.[1]||'#94a3b8';
+      return{src,col,brk:false,txt:a.title};
+    }));
+  } else {
+    buildTicker(TICKER_STATIC);
+    setTimeout(()=>{ if(liveNewsCache&&liveNewsCache.length>0) initTicker(); },18000);
+  }
+}
+setTimeout(initTicker,2000);
+
+
+// ════════════════════════════════════════════
 // KEYBOARD NAVIGATION
 // ════════════════════════════════════════════
 let kbAttackIdx=-1;
@@ -1699,6 +1944,28 @@ function buildStatsContent(){
 
 </script>
 
+<!-- ── NEWS TICKER ── -->
+<div id="news-ticker">
+  <div class="ticker-badge"><div class="ticker-dot-anim"></div>LIVE</div>
+  <div class="ticker-wrap">
+    <div class="ticker-scroll" id="ticker-scroll">
+      <span class="ticker-item"><span class="ti-src" style="color:#22d3ee">LOADING</span>Fetching live intelligence…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── OBJECTIVES PANEL ── -->
+<div id="obj-panel">
+  <div class="obj-hdr">⚔️ WAR OBJECTIVES<button class="obj-close-btn" onclick="toggleObjectives()">✕</button></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Damascus consulate strike</span><span class="obj-tag d">TRIGGERED</span></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Nevatim AFB targeted</span><span class="obj-tag a">MINOR HIT</span></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Natanz centrifuge halls</span><span class="obj-tag d">DESTROYED</span></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Fordow bunker (80m deep)</span><span class="obj-tag b">BREACHED</span></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Khamenei eliminated</span><span class="obj-tag d">CONFIRMED</span></div>
+  <div class="obj-item"><span class="obj-check">☑</span><span class="obj-name">Nuclear program halted</span><span class="obj-tag n">NEUTRALIZED</span></div>
+  <div class="obj-item"><span class="obj-check">☐</span><span class="obj-name">Hormuz Strait reopened</span><span class="obj-tag p">PENDING</span></div>
+  <div class="obj-item"><span class="obj-check">☐</span><span class="obj-name">Ceasefire agreement</span><span class="obj-tag a">ACTIVE TALKS</span></div>
+</div>
 <!-- ── STATISTICS MODAL ── -->
 <div class="stats-modal" id="stats-modal" onclick="if(event.target===this)closeStatsModal()">
   <div class="stats-modal-box">
@@ -1716,6 +1983,6 @@ function buildStatsContent(){
 <div id="share-toast"></div>
 
 <!-- ── KEYBOARD HINT ── -->
-<div id="kb-hint">↑↓ Navigate &nbsp;·&nbsp; Space Play &nbsp;·&nbsp; S Stats &nbsp;·&nbsp; F Search &nbsp;·&nbsp; C Share &nbsp;·&nbsp; Esc Close</div>
+<div id="kb-hint">↑↓ Navigate &nbsp;·&nbsp; Space Play &nbsp;·&nbsp; S Stats &nbsp;·&nbsp; F Search &nbsp;·&nbsp; C Share &nbsp;·&nbsp; A Airdef &nbsp;·&nbsp; O Obj &nbsp;·&nbsp; Esc Close</div>
 </body>
 </html>
