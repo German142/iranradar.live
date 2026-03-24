@@ -784,9 +784,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 #defcon-hud .d2{color:#f97316}
 #defcon-hud .d3{color:#eab308}
 /* Radar canvas */
-#radar-canvas{position:fixed;bottom:62px;left:10px;width:90px;height:90px;
+#radar-canvas{position:fixed;left:0;top:0;width:90px;height:90px;
   z-index:1800;border-radius:50%;border:1px solid rgba(0,255,100,.35);
-  box-shadow:0 0 14px rgba(0,255,100,.2);pointer-events:none;opacity:.85}
+  box-shadow:0 0 14px rgba(0,255,100,.2);pointer-events:none;opacity:.85;
+  transition:left .4s ease,top .4s ease}
 /* News Ticker */
 #news-ticker{position:fixed;bottom:0;left:0;right:0;height:26px;
   background:rgba(5,12,25,.92);border-top:1px solid rgba(239,68,68,.3);
@@ -4222,6 +4223,34 @@ document.addEventListener('keydown',function(e){
       },i*400);
     });
   },2500);
+})();
+
+
+// ── Anchor radar canvas to Africa on the Leaflet map ──
+(function anchorRadarToAfrica(){
+  function positionRadar(){
+    const canvas = document.getElementById('radar-canvas');
+    if(!canvas || typeof map === 'undefined') return;
+    try {
+      const pt = map.latLngToContainerPoint([10, 20]); // Central Africa / Sahara
+      const mapEl = document.getElementById('map');
+      if(!mapEl) return;
+      const rect = mapEl.getBoundingClientRect();
+      canvas.style.left = (rect.left + pt.x - 45) + 'px';
+      canvas.style.top  = (rect.top  + pt.y - 45) + 'px';
+    } catch(e){}
+  }
+  // Wait for map to be ready, then update on every move/zoom
+  function tryAttach(){
+    if(typeof map !== 'undefined' && map.on){
+      positionRadar();
+      map.on('move zoom moveend zoomend', positionRadar);
+      window.addEventListener('resize', positionRadar);
+    } else {
+      setTimeout(tryAttach, 300);
+    }
+  }
+  tryAttach();
 })();
 
 </script>
