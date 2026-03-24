@@ -771,6 +771,97 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 }
 .last-updated .upd-dot{width:5px;height:5px;border-radius:50%;background:#34d399;flex-shrink:0}
 
+
+/* ═══ C&C FEATURES ═══ */
+/* DEFCON HUD */
+#defcon-hud{position:fixed;top:0;left:50%;transform:translateX(-50%);
+  background:linear-gradient(90deg,rgba(10,15,30,.95),rgba(20,8,8,.95));
+  border:1px solid rgba(239,68,68,.4);border-top:none;border-radius:0 0 8px 8px;
+  padding:4px 18px;font-family:'Courier New',monospace;font-size:11px;font-weight:700;
+  color:#ef4444;letter-spacing:1.5px;z-index:2000;white-space:nowrap;
+  text-shadow:0 0 8px rgba(239,68,68,.6);pointer-events:none}
+#defcon-hud .d2{color:#f97316}
+#defcon-hud .d3{color:#eab308}
+/* Radar canvas */
+#radar-canvas{position:fixed;bottom:18px;left:18px;width:140px;height:140px;
+  z-index:1800;border-radius:50%;border:1px solid rgba(0,255,100,.3);
+  box-shadow:0 0 20px rgba(0,255,100,.15);pointer-events:none;opacity:.8}
+/* News Ticker */
+#news-ticker{position:fixed;bottom:0;left:0;right:0;height:28px;
+  background:rgba(5,12,25,.92);border-top:1px solid rgba(239,68,68,.3);
+  display:flex;align-items:center;overflow:hidden;z-index:1900;font-size:11px}
+.ticker-badge{background:#ef4444;color:#fff;font-weight:800;padding:2px 7px;
+  margin-right:10px;border-radius:3px;font-size:10px;letter-spacing:1px;flex-shrink:0}
+.ticker-wrap{overflow:hidden;flex:1;height:100%;position:relative}
+.ticker-inner{display:inline-flex;align-items:center;white-space:nowrap;
+  animation:tickerScroll 40s linear infinite;height:100%}
+.ticker-inner span{color:#94a3b8;padding:0 28px}
+.ticker-inner span b{color:#e2e8f0}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* Objectives Panel */
+#obj-panel{position:fixed;right:10px;top:120px;width:240px;
+  background:rgba(5,12,25,.95);border:1px solid rgba(239,68,68,.25);
+  border-radius:8px;padding:0;z-index:1700;font-size:11px;
+  display:none;max-height:75vh;overflow-y:auto}
+#obj-panel.open{display:block}
+.obj-header{background:rgba(239,68,68,.15);padding:7px 12px;font-weight:800;
+  color:#ef4444;font-size:10px;letter-spacing:2px;border-radius:8px 8px 0 0;
+  display:flex;justify-content:space-between;align-items:center}
+.obj-item{padding:6px 12px;border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:flex-start;gap:8px}
+.obj-item:last-child{border-bottom:none}
+.obj-status{font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.obj-s-done{background:rgba(34,197,94,.2);color:#4ade80}
+.obj-s-act{background:rgba(239,68,68,.2);color:#ef4444}
+.obj-s-pend{background:rgba(148,163,184,.15);color:#94a3b8}
+.obj-text{color:#cbd5e1;line-height:1.3}
+/* Stats Modal */
+.stats-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);
+  display:none;align-items:center;justify-content:center;z-index:3000}
+.stats-modal.open{display:flex}
+.stats-box{background:rgba(5,12,25,.98);border:1px solid rgba(96,165,250,.3);
+  border-radius:12px;padding:24px;max-width:520px;width:90vw;max-height:85vh;
+  overflow-y:auto;position:relative}
+.stats-box h2{color:#60a5fa;margin:0 0 18px;font-size:16px;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase}
+.stats-close{position:absolute;top:14px;right:16px;background:none;border:none;
+  color:#64748b;font-size:20px;cursor:pointer;line-height:1}
+.stats-close:hover{color:#e2e8f0}
+.stat-row{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+.stat-row:last-child{border-bottom:none}
+.stat-label{color:#94a3b8}
+.stat-val{color:#e2e8f0;font-weight:700}
+.stat-bar-wrap{height:6px;background:rgba(255,255,255,.08);border-radius:3px;
+  margin-top:4px;overflow:hidden}
+.stat-bar{height:100%;border-radius:3px;transition:width .6s}
+.stats-section{margin:14px 0 8px;font-size:10px;font-weight:800;letter-spacing:2px;
+  color:#475569;text-transform:uppercase}
+/* KB Hint */
+#kb-hint{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  background:rgba(5,12,25,.9);border:1px solid rgba(96,165,250,.2);
+  border-radius:6px;padding:5px 14px;font-size:10px;color:#64748b;
+  letter-spacing:.5px;z-index:1600;pointer-events:none;white-space:nowrap;
+  opacity:0;transition:opacity .3s}
+#kb-hint.show{opacity:1}
+/* Search box */
+.tl-search{width:100%;box-sizing:border-box;background:rgba(30,40,60,.8);
+  border:1px solid rgba(96,165,250,.2);border-radius:5px;padding:5px 10px;
+  color:#e2e8f0;font-size:11px;outline:none;margin-bottom:6px}
+.tl-search:focus{border-color:rgba(96,165,250,.5)}
+.tl-search::placeholder{color:#475569}
+/* Explosion animation */
+.expl-ring{position:absolute;border-radius:50%;pointer-events:none;animation:explRing 1.2s ease-out forwards}
+@keyframes explRing{0%{opacity:.9;transform:translate(-50%,-50%) scale(0)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+/* Topbar C&C buttons */
+.tb-ccc-btn{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);
+  color:#ef4444;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;
+  font-weight:700;letter-spacing:.5px;transition:all .2s}
+.tb-ccc-btn:hover{background:rgba(239,68,68,.2)}
+.tb-ccc-btn.active{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.6)}
+/* Airdef zone pulse */
+@keyframes airdefPulse{0%,100%{opacity:.15}50%{opacity:.35}}
 </style>
 </head>
 <body>
@@ -926,6 +1017,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
       <button class="share-btn" onclick="openAboutModal()" title="About & Sources" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);color:#60a5fa">
         <span>ℹ️</span><span class="about-btn-txt">About</span>
       </button>
+      <!-- C&C Buttons -->
+      <button class="tb-ccc-btn" id="btn-stats" onclick="openStatsModal()" title="War Statistics">📊 Stats</button>
+      <button class="tb-ccc-btn" id="btn-airdef" onclick="toggleAirDefense()" title="Toggle Air Defense Zones">🛡 ADZ</button>
+      <button class="tb-ccc-btn" id="btn-obj" onclick="toggleObjectives()" title="War Objectives">⚔ Obj</button>
       <div class="lang-sw">
         <button class="lang-btn active" data-lang="en" onclick="setLang('en',this)">EN</button>
         <button class="lang-btn" data-lang="de" onclick="setLang('de',this)">DE</button>
@@ -1034,7 +1129,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
     </div>
 
     <div style="padding:10px 14px 4px;font-size:9px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub)">Timeline</div>
-    <div class="tl" id="tl"></div>
+        <div style="padding:0 14px 0">
+      <input class="tl-search" id="tl-search-inp" placeholder="🔍 Search events..." oninput="filterTL(this.value)" type="text"/>
+    </div>
+<div class="tl" id="tl"></div>
   </div>
 
 <div id="map"></div>
@@ -3758,6 +3856,374 @@ document.addEventListener('DOMContentLoaded', function(){
 </nav>
 
 
+
+<!-- ══ C&C OVERLAY ELEMENTS ══ -->
+<div id="defcon-hud">DEFCON <span class="d2">2</span> | Day <span id="defcon-day">548</span> | Wave <span id="defcon-wave">70</span> | Oil $<span id="defcon-oil">112</span> | Active Fronts: 9 | EW Sat: ~85%</div>
+<canvas id="radar-canvas" width="140" height="140"></canvas>
+
+<div id="news-ticker">
+  <div class="ticker-badge">LIVE</div>
+  <div class="ticker-wrap"><div class="ticker-inner" id="ticker-inner"><span>Loading live intelligence feed...</span></div></div>
+</div>
+
+<div id="obj-panel">
+  <div class="obj-header">⚔ WAR OBJECTIVES <span style="cursor:pointer;color:#64748b" onclick="toggleObjectives()">✕</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-done">DONE</span><span class="obj-text">Strike IRGC C2 infrastructure in Syria</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-done">DONE</span><span class="obj-text">Neutralize Houthi drone launch capability</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-done">DONE</span><span class="obj-text">Destroy Hezbollah missile depots in Lebanon</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-act">ACTIVE</span><span class="obj-text">Suppress Iranian air defense network</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-act">ACTIVE</span><span class="obj-text">Interdict weapons shipments via Red Sea</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-act">ACTIVE</span><span class="obj-text">Degrade Iranian nuclear program sites</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-pend">PENDING</span><span class="obj-text">Establish maritime exclusion zone Gulf</span></div>
+  <div class="obj-item"><span class="obj-status obj-s-pend">PENDING</span><span class="obj-text">Full ceasefire — diplomatic resolution</span></div>
+</div>
+
+<div id="stats-modal" class="stats-modal">
+  <div class="stats-box">
+    <button class="stats-close" onclick="closeStatsModal()">✕</button>
+    <h2>⚡ War Statistics</h2>
+    <div id="stats-content"></div>
+  </div>
+</div>
+
+<div id="kb-hint">↑↓ Navigate · Space Play · S Stats · F Search · A Air Defense · O Objectives · Esc Close</div>
+
+<script>
+/* ══ C&C FEATURE SCRIPTS ══ */
+
+// ── filterTL: search/filter timeline ──
+function filterTL(query){
+  const q=(query||'').toLowerCase().trim();
+  const tl=document.getElementById('tl');
+  if(!tl)return;
+  const items=tl.querySelectorAll('.tli');
+  items.forEach(item=>{
+    const txt=item.textContent.toLowerCase();
+    if(!q||txt.includes(q)){
+      item.style.display='';
+      // highlight
+      if(q){
+        const dateEl=item.querySelector('.tli-date');
+        const titleEl=item.querySelector('.tli-title')||item.querySelector('[class^="tli"]');
+        if(dateEl)dateEl.style.outline='1px solid rgba(96,165,250,.4)';
+      } else {
+        const dateEl=item.querySelector('.tli-date');
+        if(dateEl)dateEl.style.outline='';
+      }
+    } else {
+      item.style.display='none';
+    }
+  });
+}
+
+// ── Stats Modal ──
+function openStatsModal(){
+  buildStatsContent();
+  document.getElementById('stats-modal').classList.add('open');
+}
+function closeStatsModal(){
+  document.getElementById('stats-modal').classList.remove('open');
+}
+function buildStatsContent(){
+  if(typeof ATTACKS==='undefined')return;
+  const el=document.getElementById('stats-content');
+  if(!el)return;
+  const total=ATTACKS.length;
+  const byType={iran:0,israel:0,usa:0};
+  const byPhase={};
+  ATTACKS.forEach(a=>{
+    if(byType[a.type]!==undefined)byType[a.type]++;
+    byPhase[a.phase]=(byPhase[a.phase]||0)+1;
+  });
+  const phases=Object.keys(byPhase).sort();
+  const maxPhase=Math.max(...Object.values(byPhase));
+  const phaseColors=['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#06b6d4'];
+  let html=`<div class="stat-row"><span class="stat-label">Total Events</span><span class="stat-val">${total}</span></div>
+<div class="stat-row"><span class="stat-label">🇮🇷 Iran Operations</span><span class="stat-val">${byType.iran||0}</span></div>
+<div class="stat-row"><span class="stat-label">🇮🇱 Israel Operations</span><span class="stat-val">${byType.israel||0}</span></div>
+<div class="stat-row"><span class="stat-label">🇺🇸 US Operations</span><span class="stat-val">${byType.usa||0}</span></div>
+<div class="stats-section">Events by Phase</div>`;
+  phases.forEach((p,i)=>{
+    const count=byPhase[p];
+    const pct=Math.round(count/total*100);
+    const col=phaseColors[i%phaseColors.length];
+    html+=`<div style="margin:4px 0">
+      <div class="stat-row" style="padding:3px 0;border:none">
+        <span class="stat-label" style="font-size:10px">${p.replace(/([a-z])([0-9])/,'$1 $2').toUpperCase()}</span>
+        <span class="stat-val" style="font-size:11px">${count} events (${pct}%)</span>
+      </div>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ── Air Defense Zones ──
+const AIRDEF_ZONES=[
+  {name:"Iron Dome Central",lat:32.0,lng:34.8,r:90000,color:"#3b82f6"},
+  {name:"Iron Dome North",lat:33.0,lng:35.5,r:80000,color:"#3b82f6"},
+  {name:"S-300 Tehran",lat:35.7,lng:51.4,r:120000,color:"#ef4444"},
+  {name:"S-400 Isfahan",lat:32.7,lng:51.7,r:110000,color:"#ef4444"},
+  {name:"US THAAD Iraq",lat:33.3,lng:44.4,r:130000,color:"#22c55e"},
+  {name:"US PATRIOT Jordan",lat:31.9,lng:36.0,r:100000,color:"#22c55e"},
+  {name:"Houthi SA-2 Yemen",lat:15.4,lng:44.2,r:70000,color:"#f97316"},
+];
+let airdefLayers=[];let airdefOn=false;
+function toggleAirDefense(){
+  airdefOn=!airdefOn;
+  const btn=document.getElementById('btn-airdef');
+  if(airdefOn){
+    AIRDEF_ZONES.forEach(z=>{
+      if(typeof L!=='undefined'&&typeof map!=='undefined'){
+        const c=L.circle([z.lat,z.lng],{radius:z.r,color:z.color,fillColor:z.color,
+          fillOpacity:0.06,weight:1,dashArray:'6 4',opacity:0.5}).addTo(map);
+        c.bindTooltip(`🛡 ${z.name}`,{permanent:false,className:'leaflet-tooltip'});
+        airdefLayers.push(c);
+      }
+    });
+    if(btn){btn.classList.add('active');btn.textContent='🛡 ADZ ON';}
+  } else {
+    airdefLayers.forEach(l=>{try{l.remove()}catch(e){}});
+    airdefLayers=[];
+    if(btn){btn.classList.remove('active');btn.textContent='🛡 ADZ';}
+  }
+}
+
+// ── Objectives Panel ──
+function toggleObjectives(){
+  const p=document.getElementById('obj-panel');
+  if(p)p.classList.toggle('open');
+}
+
+// ── Explosion Animation ──
+function triggerExplosion(lat,lng,color){
+  if(typeof map==='undefined')return;
+  const pt=map.latLngToContainerPoint([lat,lng]);
+  const mapEl=document.getElementById('map');
+  if(!mapEl)return;
+  [0,1,2].forEach(i=>{
+    const ring=document.createElement('div');
+    ring.style.cssText=`position:absolute;border-radius:50%;pointer-events:none;
+      border:2px solid ${color||'#ef4444'};
+      left:${pt.x}px;top:${pt.y}px;z-index:1500;
+      width:${(i+1)*30}px;height:${(i+1)*30}px;
+      animation:explRing ${0.8+i*0.3}s ease-out ${i*0.1}s forwards`;
+    mapEl.appendChild(ring);
+    setTimeout(()=>{try{ring.remove()}catch(e){}},1500);
+  });
+}
+
+// ── Radar Sweep ──
+(function initRadar(){
+  const canvas=document.getElementById('radar-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=140,H=140,cx=70,cy=70,R=68;
+  let angle=0;
+  const dots=[];
+  for(let i=0;i<12;i++){
+    const a=Math.random()*Math.PI*2;
+    const r=Math.random()*R*0.85;
+    dots.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,a:Math.random(),s:Math.random()});
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // BG
+    ctx.fillStyle='rgba(0,15,5,.85)';
+    ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
+    // Grid rings
+    [.25,.5,.75,1].forEach(f=>{
+      ctx.strokeStyle='rgba(0,255,80,.12)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(cx,cy,R*f,0,Math.PI*2);ctx.stroke();
+    });
+    // Cross hairs
+    ctx.strokeStyle='rgba(0,255,80,.12)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
+    // Sweep trail
+    const grad=ctx.createConicalGradient?null:null;
+    const sweepLen=Math.PI/2;
+    for(let s=0;s<30;s++){
+      const a=angle-sweepLen*(s/30);
+      ctx.strokeStyle=`rgba(0,255,80,${(1-s/30)*0.18})`;
+      ctx.lineWidth=R*2*Math.PI/60;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,a,a+0.12);
+      ctx.closePath();
+      ctx.fillStyle=`rgba(0,255,80,${(1-s/30)*0.06})`;
+      ctx.fill();
+    }
+    // Sweep line
+    ctx.strokeStyle='rgba(0,255,80,.9)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(angle)*R,cy+Math.sin(angle)*R);
+    ctx.stroke();
+    // Dots/blips
+    dots.forEach(d=>{
+      const da=(angle%(Math.PI*2))-Math.atan2(d.y-cy,d.x-cx);
+      const norm=((da%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+      const fade=norm<Math.PI*2?Math.max(0,1-norm/(Math.PI*1.2)):0;
+      if(fade>0.05){
+        ctx.fillStyle=`rgba(0,255,80,${fade*.9})`;
+        ctx.beginPath();ctx.arc(d.x,d.y,2+d.s,0,Math.PI*2);ctx.fill();
+        if(fade>.5){
+          ctx.strokeStyle=`rgba(0,255,80,${fade*.3})`;ctx.lineWidth=1;
+          ctx.beginPath();ctx.arc(d.x,d.y,5+d.s*3,0,Math.PI*2);ctx.stroke();
+        }
+      }
+    });
+    // Center dot
+    ctx.fillStyle='rgba(0,255,80,.8)';
+    ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fill();
+    angle+=0.025;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── News Ticker ──
+const TICKER_STATIC=[
+  "🔴 <b>BREAKING:</b> IDF confirms strikes on Iranian proxy positions in eastern Syria",
+  "⚠️ <b>ALERT:</b> Houthi missile intercepted over Red Sea — USS Abraham Lincoln responds",
+  "🛡 <b>IRON DOME:</b> 94% interception rate recorded during April 2024 mass attack",
+  "🚀 <b>IRAN:</b> IRGC ballistic missile test detected — range estimated 1,800km",
+  "🇺🇸 <b>US CENTCOM:</b> Additional F-35 squadron deployed to Al Udeid Air Base, Qatar",
+  "💥 <b>STRIKE:</b> Israeli Air Force targets Hezbollah weapons depot south Beirut",
+  "🌊 <b>NAVAL:</b> USS Gerald R. Ford carrier group conducting exercises eastern Mediterranean",
+  "📡 <b>INTEL:</b> Satellite imagery shows damage to Fordow enrichment facility",
+  "⚡ <b>CONFIRMED:</b> Iranian radar systems at Natanz degraded — IDF spokesperson",
+  "🔴 <b>HOUTHIS:</b> Anti-ship ballistic missile fired from Yemen — neutralized by USS Gravely",
+];
+function initTicker(){
+  const inner=document.getElementById('ticker-inner');
+  if(!inner)return;
+  let items=TICKER_STATIC;
+  if(typeof liveNewsCache!=='undefined'&&liveNewsCache&&liveNewsCache.length>0){
+    items=liveNewsCache.slice(0,12).map(n=>`📡 <b>LIVE:</b> ${n.title||n}`).concat(TICKER_STATIC);
+  }
+  const doubled=[...items,...items];
+  inner.innerHTML=doubled.map(t=>`<span>${t}</span>`).join('');
+  // Adjust animation duration based on content length
+  const totalLen=items.join('').length;
+  const duration=Math.max(25,totalLen/8);
+  inner.style.animationDuration=duration+'s';
+}
+setTimeout(initTicker,500);
+
+// ── Ship Patrol Movement ──
+(function initShips(){
+  if(typeof L==='undefined'||typeof map==='undefined')return;
+  const ships=[
+    {name:"USS Abraham Lincoln",lat:26.5,lng:56.5,dr:0,color:"#22c55e"},
+    {name:"USS Gerald R. Ford",lat:34.5,lng:33.5,dr:1.3,color:"#22c55e"},
+    {name:"USS Bataan",lat:22.0,lng:45.5,dr:2.1,color:"#22c55e"},
+    {name:"USS Gravely",lat:12.5,lng:43.8,dr:0.7,color:"#60a5fa"},
+  ];
+  const shipLayers=[];
+  ships.forEach(s=>{
+    if(typeof L==='undefined')return;
+    const m=L.circleMarker([s.lat,s.lng],{radius:5,color:s.color,
+      fillColor:s.color,fillOpacity:.8,weight:2}).addTo(map);
+    m.bindTooltip(`⚓ ${s.name}`,{permanent:false});
+    shipLayers.push({marker:m,base:{lat:s.lat,lng:s.lng},dr:s.dr,t:0});
+  });
+  setInterval(()=>{
+    shipLayers.forEach(sl=>{
+      sl.t+=0.008;
+      const newLat=sl.base.lat+Math.sin(sl.t+sl.dr)*0.35;
+      const newLng=sl.base.lng+Math.cos(sl.t*0.7+sl.dr)*0.5;
+      try{sl.marker.setLatLng([newLat,newLng]);}catch(e){}
+    });
+  },800);
+})();
+
+// ── Keyboard Shortcuts ──
+let kbIdx=-1;
+let kbItems=[];
+document.addEventListener('keydown',function(e){
+  const tag=document.activeElement.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    e.preventDefault();
+    const tl=document.getElementById('tl');
+    if(!tl)return;
+    kbItems=Array.from(tl.querySelectorAll('.tli')).filter(i=>i.style.display!=='none');
+    if(kbItems.length===0)return;
+    if(e.key==='ArrowDown')kbIdx=Math.min(kbIdx+1,kbItems.length-1);
+    else kbIdx=Math.max(kbIdx-1,0);
+    kbItems.forEach((el,i)=>{
+      el.style.outline=i===kbIdx?'1px solid rgba(96,165,250,.6)':'';
+    });
+    if(kbItems[kbIdx])kbItems[kbIdx].scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+  if(e.key===' '||e.key==='Space'){
+    e.preventDefault();
+    const rb=document.getElementById('replay-btn');
+    if(rb)rb.click();
+  }
+  if(e.key.toLowerCase()==='s'){
+    openStatsModal();
+  }
+  if(e.key.toLowerCase()==='f'){
+    const si=document.getElementById('tl-search-inp');
+    if(si){si.focus();si.select();}
+  }
+  if(e.key.toLowerCase()==='a'){
+    toggleAirDefense();
+  }
+  if(e.key.toLowerCase()==='o'){
+    toggleObjectives();
+  }
+  if(e.key==='Escape'){
+    closeStatsModal();
+    const p=document.getElementById('obj-panel');
+    if(p)p.classList.remove('open');
+  }
+  // Show KB hint
+  const hint=document.getElementById('kb-hint');
+  if(hint){hint.classList.add('show');clearTimeout(hint._t);hint._t=setTimeout(()=>hint.classList.remove('show'),2500);}
+});
+
+// ── DEFCON HUD updater ──
+(function updateHUD(){
+  const startDate=new Date('2023-10-07');
+  const now=new Date();
+  const days=Math.floor((now-startDate)/(1000*60*60*24));
+  const el=document.getElementById('defcon-day');
+  if(el)el.textContent=days;
+  // Simulate oil price fluctuation
+  const oil=110+Math.round(Math.sin(Date.now()/300000)*8);
+  const oilEl=document.getElementById('defcon-oil');
+  if(oilEl)oilEl.textContent=oil;
+  // Wave count from ATTACKS
+  if(typeof ATTACKS!=='undefined'){
+    const wEl=document.getElementById('defcon-wave');
+    if(wEl)wEl.textContent=ATTACKS.length;
+  }
+  setInterval(()=>{
+    const oil2=110+Math.round(Math.sin(Date.now()/300000)*8);
+    if(oilEl)oilEl.textContent=oil2;
+  },10000);
+})();
+
+// ── Explosion triggers on attack clicks ──
+(function patchAttackExplosions(){
+  if(typeof ATTACKS==='undefined')return;
+  // Trigger explosions on the latest 5 attacks when map loads
+  setTimeout(()=>{
+    const recent=ATTACKS.slice(-5);
+    const colorMap={iran:'#ef4444',israel:'#3b82f6',usa:'#22c55e'};
+    recent.forEach((a,i)=>{
+      setTimeout(()=>{
+        const coords=typeof CITIES!=='undefined'&&CITIES[a.to]?CITIES[a.to]:null;
+        if(coords)triggerExplosion(coords[0],coords[1],colorMap[a.type]||'#ef4444');
+      },i*400);
+    });
+  },2500);
+})();
+
+</script>
 </body>
 </html>
 
